@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/*
+ * ページ全体の土台。NEWTONE 本体のスタイルは src/newtone/*.css（すべて .nt 配下）。
+ * ここには ARQO サイト（Re-Palette/-ARQO-HP の globals.css）のうち、
+ * NEWTONE ページにも効いているものだけを同じ値で置いている。
+ */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: auto;
+  }
+
+  body {
+    overflow-x: clip;
+  }
+
+  /* キーボード操作時のフォーカス表示（細い白線） */
+  :focus-visible {
+    outline: 1px solid currentColor;
+    outline-offset: 4px;
+  }
+}
+
+/* 視差効果を減らす設定では、ホバー等のトランジションも即時に */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 低電力端末向けの軽量表示（src/newtone/motion.ts で html[data-perf="lite"] を付与） */
+html[data-perf="lite"] *,
+html[data-perf="lite"] *::before,
+html[data-perf="lite"] *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
