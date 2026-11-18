@@ -6,7 +6,7 @@ const titleMask = '/newtone/hero-title-mask.webp';
 /** スマートフォン用のキービジュアル（縦長のポスター。ヘッダー部分だけ画像から除き、HTML のヘッダーを重ねる） */
 const heroSp = '/newtone/hero-sp.webp';
 const heroLights = '/newtone/hero-lights.webp';
-import { gsap, useSceneMotion } from './motion';
+import { gsap, isLite, useSceneMotion } from './motion';
 
 /** PC（横長）版とスマホ（縦長）版の切り替え条件。CSS の .hero__desk / .hero__poster と同じ */
 const MQ_DESK = '(min-width: 768px) and (min-aspect-ratio: 6/5)';
@@ -74,7 +74,14 @@ export const HeroScene: React.FC = () => {
         .set('.hero__desk .hero__stage', { autoAlpha: 0 }, 0.999);
       return;
     }
-    // スマートフォン：ピン留めせず、画面外へ抜ける間だけ穏やかに動かす
+    // スマートフォン：表示した瞬間に一度だけ、ポスターがゆっくり寄りながら現れ、光の層が流れ込む
+    gsap
+      .timeline({ defaults: { ease: 'power3.out' } })
+      .from('.poster__img', { scale: 1.1, opacity: 0.25, duration: 1.8, ease: 'power2.out' }, 0)
+      .from('.hero__poster .hero__lights', { xPercent: -10, duration: 2.4, ease: 'power2.out' }, 0.1);
+
+    // 画面外へ抜ける間だけ穏やかに動かす（軽量端末では省く）
+    if (isLite()) return;
     const tl = gsap.timeline({
       defaults: { ease: 'none' },
       scrollTrigger: { trigger: ref.current, start: 'top top', end: 'bottom top', scrub: true },

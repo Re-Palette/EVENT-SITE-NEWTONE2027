@@ -40,7 +40,7 @@ export const ManifestoScene: React.FC = () => {
         scrollTrigger: { trigger: '.mf__text', start: 'top 88%', end: desktop ? 'bottom 80%' : 'bottom 82%', scrub: true },
       })
       .fromTo('.mf .eyebrow', { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.1 }, 0)
-      .fromTo('.mf__title .char', { opacity: 0.12 }, { opacity: 1, duration: 0.08, stagger: 0.028 }, 0.04)
+      .fromTo('.mf__title .char', desktop ? { opacity: 0.12 } : { opacity: 0.12, yPercent: 60 }, desktop ? { opacity: 1, duration: 0.08, stagger: 0.028 } : { opacity: 1, yPercent: 0, duration: 0.08, stagger: 0.028 }, 0.04)
       .fromTo('.mf__title .brush-path', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.12, stagger: 0.04 }, '>-0.04')
       .fromTo('.mf__body p', { opacity: 0.14, y: 14 }, { opacity: 1, y: 0, duration: 0.16, stagger: 0.11 }, '>-0.08')
       .fromTo('.mf__pillar', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.14, stagger: 0.06 }, '>-0.06');

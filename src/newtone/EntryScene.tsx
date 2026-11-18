@@ -6,7 +6,7 @@ import { CONTACT_HREF, SITE } from './site';
 import { SiteFooter } from './SiteFooter';
 import { SnsLinks } from './SnsLinks';
 import { ArrowRight, BrushUnderline, Particles, SplitChars } from './parts';
-import { gsap, revealOnce, useSceneMotion } from './motion';
+import { gsap, useSceneMotion } from './motion';
 
 const contactHref = CONTACT_HREF;
 
@@ -26,7 +26,14 @@ export const EntryScene: React.FC<{ showSns?: boolean }> = ({ showSns = false })
       .fromTo('.en__crowd', { yPercent: 22 }, { yPercent: 0, duration: 0.6 }, 0);
 
     if (!desktop) {
-      revealOnce(['.en .eyebrow', '.en__script', '.en__title', '.en__lead', '.en .cta--main', '.en__pending', '.en__sns'], '.en__inner', { stagger: 0.1 });
+      // 大きなコピーが1文字ずつせり上がり、筆致のラインが引かれ、残りが続く（PC と同じ組み立て・一度だけ）
+      gsap
+        .timeline({ defaults: { ease: 'power3.out' }, scrollTrigger: { trigger: '.en__inner', start: 'top 82%', once: true } })
+        .from('.en .eyebrow', { opacity: 0, y: 20, duration: 0.7 }, 0)
+        .from('.en__script', { opacity: 0, xPercent: -12, duration: 1 }, 0.1)
+        .from('.en__title .char', { opacity: 0, yPercent: 80, duration: 0.9, stagger: 0.05 }, 0.25)
+        .from('.en .brush-path', { strokeDashoffset: 1, duration: 1, stagger: 0.12, ease: 'power2.inOut' }, 0.9)
+        .from(['.en__lead', '.en .cta--main', '.en__pending', '.en__sns'], { opacity: 0, y: 30, duration: 0.9, stagger: 0.12 }, 1.0);
       return;
     }
     gsap

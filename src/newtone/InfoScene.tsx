@@ -29,7 +29,13 @@ export const InfoScene: React.FC<{ part?: 'all' | 'access' | 'news' }> = ({ part
     if (part !== 'all') return;
     if (!desktop) {
       if (has('.inf__head')) revealOnce('.inf__head > *', '.inf__head');
-      if (has('.inf__card')) revealOnce('.inf__card', '.inf__card', { y: 50 });
+      if (has('.inf__card')) {
+        // 招待状が少し傾いたまま下から入り、各行が順に滑り込む（PC と同じ）
+        gsap
+          .timeline({ defaults: { ease: 'power3.out' }, scrollTrigger: { trigger: '.inf__card', start: 'top 88%', once: true } })
+          .from('.inf__card', { opacity: 0, y: 56, rotate: -2, duration: 1.1 }, 0)
+          .from('.inf__row', { opacity: 0, x: 22, duration: 0.8, stagger: 0.1 }, 0.35);
+      }
       if (has('.inf__news')) revealOnce('.inf__news', '.inf__news');
       return;
     }

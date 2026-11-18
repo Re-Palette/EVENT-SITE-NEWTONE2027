@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { EXPERIENCE_CATEGORIES } from './site';
-import { gsap, revealOnce, useSceneMotion } from './motion';
+import { gsap, parallax, revealOnce, useSceneMotion } from './motion';
 
 const N = EXPERIENCE_CATEGORIES.length;
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -17,7 +17,15 @@ export const CategoriesScene: React.FC = () => {
   useSceneMotion(ref, ({ desktop, scope }) => {
     if (!desktop) {
       revealOnce('.ct__head > *', '.ct__head');
-      gsap.utils.toArray<HTMLElement>('.ct__item', scope).forEach((item) => revealOnce(item, item, { y: 0, x: -28, duration: 0.8 }));
+      // 一覧：番号・名前・コピーが順に灯り、区切り線が左から伸びる
+      gsap.utils.toArray<HTMLElement>('.ct__item', scope).forEach((item) => {
+        gsap
+          .timeline({ defaults: { ease: 'power3.out' }, scrollTrigger: { trigger: item, start: 'top 90%', once: true } })
+          .from(item.querySelector('.ct__idx'), { opacity: 0, x: -14, duration: 0.6 }, 0)
+          .from(item.querySelector('.ct__name'), { opacity: 0, x: -30, duration: 0.9 }, 0.06)
+          .from(item.querySelector('.ct__copy'), { opacity: 0, y: 14, duration: 0.8 }, 0.2);
+      });
+      parallax('.ct__bg', '.ct', { yPercent: -6 }, { yPercent: 6 });
       return;
     }
 

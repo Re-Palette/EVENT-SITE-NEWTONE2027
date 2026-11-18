@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Phrases } from './parts';
-import { gsap, revealOnce, useSceneMotion } from './motion';
+import { clipReveal, gsap, parallax, revealOnce, useSceneMotion } from './motion';
 
 const waveA = '/newtone/wave-a.webp';
 const waveB = '/newtone/wave-b.webp';
@@ -89,6 +89,9 @@ export const ExperienceScene: React.FC = () => {
     }
     revealOnce('.xp__intro > *', '.xp__intro');
     revealOnce('.xp__card', '.xp__cards', { y: 0, x: 44, stagger: 0.1 });
+    // カードの絵は幕が開くように現れ、スクロールに合わせて中の画像が横へゆっくり流れる（PC の .xp__art-in と同じ動き）
+    clipReveal('.xp__art', '.xp__cards', { stagger: 0.1, duration: 1.1 });
+    parallax('.xp__art-in', '.xp__cards', { xPercent: -6 }, { xPercent: 6 });
   });
 
   return (

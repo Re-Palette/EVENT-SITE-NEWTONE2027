@@ -41,7 +41,7 @@ export function useSceneMotion(scope: RefObject<HTMLElement | null>, setup: Setu
 export { gsap, ScrollTrigger };
 
 /** 低電力端末（コア数・メモリが少ない、データセーバー）。ARQO と同じ判定で軽量表示に切り替える */
-function isLiteDevice() {
+export function isLiteDevice() {
   const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
   return (nav.hardwareConcurrency ?? 8) <= 4 || (nav.deviceMemory ?? 8) <= 4 || nav.connection?.saveData === true;
 }
@@ -109,4 +109,49 @@ export function revealOnce(targets: gsap.DOMTarget, trigger?: gsap.DOMTarget, va
     ...vars,
     scrollTrigger: { trigger: trigger ?? targets, start: 'top 86%', once: true },
   });
+}
+
+/** 低電力端末か（data-perf は親の effect で付くため、子の setup 時点では端末判定も見る） */
+export const isLite = () => document.documentElement.dataset.perf === 'lite' || isLiteDevice();
+
+/**
+ * 見出しの文字を1文字ずつ下からせり上げる（画面に入ったとき一度だけ。transform / opacity のみ）。
+ * 親が overflow:hidden でなくても見えないよう opacity も 0 から始める。
+ */
+export function revealChars(chars: gsap.DOMTarget, trigger: gsap.DOMTarget, vars: gsap.TweenVars = {}) {
+  return gsap.from(chars, {
+    yPercent: 105,
+    opacity: 0,
+    duration: 0.9,
+    stagger: 0.04,
+    ease: 'power3.out',
+    ...vars,
+    scrollTrigger: { trigger, start: 'top 88%', once: true },
+  });
+}
+
+/** 通過するあいだだけ、背景・画像をわずかにずらす（スクロール連動。軽量端末では何もしない） */
+export function parallax(targets: gsap.DOMTarget, trigger: gsap.DOMTarget, from: gsap.TweenVars, to: gsap.TweenVars) {
+  if (isLite()) return;
+  return gsap.fromTo(targets, from, {
+    ease: 'none',
+    ...to,
+    scrollTrigger: { trigger, start: 'top bottom', end: 'bottom top', scrub: true },
+  });
+}
+
+/** 画像・カードを上から下へ幕が開くように見せる（clip-path。一度だけ） */
+export function clipReveal(targets: gsap.DOMTarget, trigger?: gsap.DOMTarget, vars: gsap.TweenVars = {}) {
+  return gsap.fromTo(
+    targets,
+    { clipPath: 'inset(0% 0% 100% 0%)' },
+    {
+      clipPath: 'inset(0% 0% 0% 0%)',
+      duration: 1,
+      ease: 'power3.inOut',
+      clearProps: 'clipPath',
+      ...vars,
+      scrollTrigger: { trigger: trigger ?? targets, start: 'top 90%', once: true },
+    },
+  );
 }

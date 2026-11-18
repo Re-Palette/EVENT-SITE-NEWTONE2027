@@ -13,7 +13,7 @@ export const SnsScene: React.FC = () => {
   useSceneMotion(ref, ({ desktop }) => {
     if (!desktop) {
       revealOnce('.sns-sc__head > *', '.sns-sc__head');
-      revealOnce('.sns__item', '.sns__list', { y: 28, stagger: 0.1 });
+      revealOnce('.sns__item', '.sns__list', { y: 36, scale: 0.94, stagger: 0.12 });
       return;
     }
     gsap

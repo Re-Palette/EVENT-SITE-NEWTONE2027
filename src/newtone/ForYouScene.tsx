@@ -20,7 +20,14 @@ export const ForYouScene: React.FC = () => {
   useSceneMotion(ref, ({ desktop, scope }) => {
     if (!desktop) {
       revealOnce('.fy__head > *', '.fy__head');
-      gsap.utils.toArray<HTMLElement>('.fy__item', scope).forEach((item) => revealOnce(item, item, { y: 28 }));
+      // 各行：罫線が左から伸び、番号と文が順に立ち上がる（PC と同じ組み立て）
+      gsap.utils.toArray<HTMLElement>('.fy__item', scope).forEach((item) => {
+        gsap
+          .timeline({ defaults: { ease: 'power3.out' }, scrollTrigger: { trigger: item, start: 'top 90%', once: true } })
+          .from(item.querySelector('.fy__rule'), { scaleX: 0, duration: 1, ease: 'power2.inOut' }, 0)
+          .from(item.querySelector('.fy__no'), { opacity: 0, x: -16, duration: 0.7 }, 0.1)
+          .from(item.querySelector('.fy__reason'), { opacity: 0, y: 24, duration: 0.9 }, 0.18);
+      });
       revealOnce('.fy__note', '.fy__note');
       return;
     }

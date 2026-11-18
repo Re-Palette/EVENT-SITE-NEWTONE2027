@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { PARTNERS, PARTNER_GROUPS, type Partner } from './partners';
 import { ArrowRight, SplitChars } from './parts';
 import { CONTACT_HREF } from './site';
-import { gsap, revealOnce, useSceneMotion } from './motion';
+import { gsap, revealChars, revealOnce, useSceneMotion } from './motion';
 
 const PartnerTile: React.FC<{ partner: Partner }> = ({ partner }) => {
   const inner = partner.logo ? (
@@ -30,8 +30,14 @@ export const PartnersScene: React.FC = () => {
 
   useSceneMotion(ref, ({ desktop, scope }) => {
     if (!desktop) {
-      revealOnce('.pt__head > *', '.pt__head');
-      gsap.utils.toArray<HTMLElement>('.pt__group', scope).forEach((g) => revealOnce(g, g, { y: 28 }));
+      revealOnce(['.pt .eyebrow', '.pt__ja', '.pt__lead'], '.pt__head', { delay: 0.25 });
+      revealChars('.pt__en .char', '.pt__head', { stagger: 0.045 });
+      gsap.utils.toArray<HTMLElement>('.pt__group', scope).forEach((g) => {
+        gsap
+          .timeline({ defaults: { ease: 'power3.out' }, scrollTrigger: { trigger: g, start: 'top 90%', once: true } })
+          .from(g.querySelector('.pt__group-title'), { opacity: 0, x: -24, duration: 0.8 }, 0)
+          .from(g.querySelectorAll('.pt__tile'), { opacity: 0, y: 26, scale: 0.94, duration: 0.9, stagger: 0.08 }, 0.12);
+      });
       if (scope.querySelector('.pt__cta')) revealOnce('.pt__cta', '.pt__cta');
       return;
     }

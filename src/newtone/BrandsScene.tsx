@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { BRANDS, BRAND_PLACEHOLDER_COUNT, type Brand } from './brands';
 import { Phrases } from './parts';
-import { gsap, revealOnce, useSceneMotion } from './motion';
+import { gsap, parallax, revealChars, revealOnce, useSceneMotion } from './motion';
 
 const HUES = ['#ff4fa3', '#a35cf0', '#4f6dff', '#e46bff', '#7f93f6'];
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -52,10 +52,25 @@ export const BrandsScene: React.FC = () => {
   const hasBrands = BRANDS.length > 0;
   const count = hasBrands ? BRANDS.length : BRAND_PLACEHOLDER_COUNT;
 
-  useSceneMotion(ref, ({ desktop }) => {
+  useSceneMotion(ref, ({ desktop, scope }) => {
     if (!desktop) {
-      revealOnce('.br__head > *', '.br__head');
-      revealOnce('.br__item', '.br__grid', { y: 50, stagger: 0.08 });
+      // 見出し：LINEUP が1文字ずつせり上がり、続けて日本語と本文が現れる
+      gsap.from('.br .eyebrow', { opacity: 0, x: -24, duration: 0.8, ease: 'power3.out', scrollTrigger: { trigger: '.br__head', start: 'top 88%', once: true } });
+      revealChars('.br__en .char', '.br__head', { stagger: 0.07 });
+      revealOnce(['.br__ja', '.br__lead'], '.br__head', { delay: 0.35, stagger: 0.12 });
+      // カード：左右交互に少し斜めから入り、拡大しながら定位置へ
+      gsap.utils.toArray<HTMLElement>('.br__item', scope).forEach((item, i) => {
+        gsap.from(item, {
+          opacity: 0,
+          y: 56,
+          x: i % 2 ? 14 : -14,
+          scale: 0.94,
+          duration: 1,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: item, start: 'top 92%', once: true },
+        });
+      });
+      parallax('.br__bg', '.br', { yPercent: -5 }, { yPercent: 5 });
       return;
     }
     gsap
