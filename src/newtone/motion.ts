@@ -27,7 +27,9 @@ export function useSceneMotion(scope: RefObject<HTMLElement | null>, setup: Setu
       const el = scope.current;
       if (!el) return;
       const mm = gsap.matchMedia(el);
-      mm.add({ desktop: MQ_DESKTOP, reduce: MQ_REDUCE }, (c) => {
+      // gsap.matchMedia は「条件のどれか1つでも真」のときだけ関数を呼ぶ。
+      // スマホ（desktop も reduce も偽）でも必ず呼ばれるよう、常に真の条件 all を加える
+      mm.add({ all: 'all', desktop: MQ_DESKTOP, reduce: MQ_REDUCE }, (c) => {
         const { desktop, reduce } = c.conditions as { desktop: boolean; reduce: boolean };
         if (reduce) return;
         return setup({ desktop, scope: el });
@@ -95,42 +97,41 @@ export function useScrollSync() {
   }, []);
 }
 
+/** スマホ用スクロール同期の追従（秒）。Lenis の慣性に重ねて、指の動きに少し遅れてついてくる */
+export const SCRUB = 0.6;
+
 /**
- * ピン留めしない場面用：画面に入ったときに一度だけ、ふわりと現れる軽い演出（transform / opacity のみ）。
+ * スマホ用：要素ごとのスクロール同期タイムライン（上へ戻せば逆再生）。
+ * 画面下 92% で動き出し、画面中ほど 55% に来るまでに完成形になる。
  * useSceneMotion の setup 内で呼ぶこと（matchMedia の revert でまとめて片付く）。
  */
-export function revealOnce(targets: gsap.DOMTarget, trigger?: gsap.DOMTarget, vars: gsap.TweenVars = {}) {
-  return gsap.from(targets, {
-    opacity: 0,
-    y: 34,
-    duration: 0.95,
-    ease: 'power3.out',
-    stagger: 0.09,
-    ...vars,
-    scrollTrigger: { trigger: trigger ?? targets, start: 'top 86%', once: true },
+export function scrubTl(trigger: gsap.DOMTarget, st: Omit<ScrollTrigger.Vars, 'trigger'> = {}) {
+  return gsap.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: { trigger, start: 'top 92%', end: 'top 55%', scrub: SCRUB, invalidateOnRefresh: true, ...st },
   });
+}
+
+/**
+ * 要素ごとに少しずつ遅らせて動かす（stagger の代わり）。
+ * タイムライン内の stagger は2つ目以降の初期状態が描画されず、未到達なのに見えてしまうため、1つずつ置く。
+ */
+export function eachFromTo(
+  tl: gsap.core.Timeline,
+  targets: gsap.DOMTarget,
+  from: gsap.TweenVars,
+  to: gsap.TweenVars,
+  at = 0,
+  each = 0.1,
+) {
+  gsap.utils.toArray<Element>(targets).forEach((t, i) => tl.fromTo(t, { ...from }, { ...to }, at + i * each));
+  return tl;
 }
 
 /** 低電力端末か（data-perf は親の effect で付くため、子の setup 時点では端末判定も見る） */
 export const isLite = () => document.documentElement.dataset.perf === 'lite' || isLiteDevice();
 
-/**
- * 見出しの文字を1文字ずつ下からせり上げる（画面に入ったとき一度だけ。transform / opacity のみ）。
- * 親が overflow:hidden でなくても見えないよう opacity も 0 から始める。
- */
-export function revealChars(chars: gsap.DOMTarget, trigger: gsap.DOMTarget, vars: gsap.TweenVars = {}) {
-  return gsap.from(chars, {
-    yPercent: 105,
-    opacity: 0,
-    duration: 0.9,
-    stagger: 0.04,
-    ease: 'power3.out',
-    ...vars,
-    scrollTrigger: { trigger, start: 'top 88%', once: true },
-  });
-}
-
-/** 通過するあいだだけ、背景・画像をわずかにずらす（スクロール連動。軽量端末では何もしない） */
+/** 場面を通過するあいだ、背景・画像をわずかにずらす（スクロール連動。軽量端末では何もしない） */
 export function parallax(targets: gsap.DOMTarget, trigger: gsap.DOMTarget, from: gsap.TweenVars, to: gsap.TweenVars) {
   if (isLite()) return;
   return gsap.fromTo(targets, from, {
@@ -138,20 +139,4 @@ export function parallax(targets: gsap.DOMTarget, trigger: gsap.DOMTarget, from:
     ...to,
     scrollTrigger: { trigger, start: 'top bottom', end: 'bottom top', scrub: true },
   });
-}
-
-/** 画像・カードを上から下へ幕が開くように見せる（clip-path。一度だけ） */
-export function clipReveal(targets: gsap.DOMTarget, trigger?: gsap.DOMTarget, vars: gsap.TweenVars = {}) {
-  return gsap.fromTo(
-    targets,
-    { clipPath: 'inset(0% 0% 100% 0%)' },
-    {
-      clipPath: 'inset(0% 0% 0% 0%)',
-      duration: 1,
-      ease: 'power3.inOut',
-      clearProps: 'clipPath',
-      ...vars,
-      scrollTrigger: { trigger: trigger ?? targets, start: 'top 90%', once: true },
-    },
-  );
 }

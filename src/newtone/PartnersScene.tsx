@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { PARTNERS, PARTNER_GROUPS, type Partner } from './partners';
 import { ArrowRight, SplitChars } from './parts';
 import { CONTACT_HREF } from './site';
-import { gsap, revealChars, revealOnce, useSceneMotion } from './motion';
+import { eachFromTo, gsap, scrubTl, useSceneMotion } from './motion';
 
 const PartnerTile: React.FC<{ partner: Partner }> = ({ partner }) => {
   const inner = partner.logo ? (
@@ -30,15 +30,16 @@ export const PartnersScene: React.FC = () => {
 
   useSceneMotion(ref, ({ desktop, scope }) => {
     if (!desktop) {
-      revealOnce(['.pt .eyebrow', '.pt__ja', '.pt__lead'], '.pt__head', { delay: 0.25 });
-      revealChars('.pt__en .char', '.pt__head', { stagger: 0.045 });
+      const head = scrubTl('.pt__head', { start: 'top 90%', end: 'top 40%' });
+      head.fromTo('.pt .eyebrow', { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.2 }, 0);
+      eachFromTo(head, '.pt__en .char', { yPercent: 105, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.35, ease: 'power2.out' }, 0.05, 0.045);
+      eachFromTo(head, ['.pt__ja', '.pt__lead'], { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3 }, 0.5, 0.12);
       gsap.utils.toArray<HTMLElement>('.pt__group', scope).forEach((g) => {
-        gsap
-          .timeline({ defaults: { ease: 'power3.out' }, scrollTrigger: { trigger: g, start: 'top 90%', once: true } })
-          .from(g.querySelector('.pt__group-title'), { opacity: 0, x: -24, duration: 0.8 }, 0)
-          .from(g.querySelectorAll('.pt__tile'), { opacity: 0, y: 26, scale: 0.94, duration: 0.9, stagger: 0.08 }, 0.12);
+        const tl = scrubTl(g, { start: 'top 92%', end: 'top 52%' });
+        tl.fromTo(g.querySelector('.pt__group-title'), { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.4 }, 0);
+        eachFromTo(tl, g.querySelectorAll('.pt__tile'), { opacity: 0, y: 26, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.5 }, 0.15, 0.1);
       });
-      if (scope.querySelector('.pt__cta')) revealOnce('.pt__cta', '.pt__cta');
+      if (scope.querySelector('.pt__cta')) scrubTl('.pt__cta', { start: 'top 95%', end: 'top 65%' }).fromTo('.pt__cta', { opacity: 0, y: 30 }, { opacity: 1, y: 0 }, 0);
       return;
     }
     const tl = gsap

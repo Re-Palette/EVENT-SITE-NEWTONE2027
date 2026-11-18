@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Phrases } from './parts';
-import { gsap, revealOnce, useSceneMotion } from './motion';
+import { eachFromTo, gsap, scrubTl, useSceneMotion } from './motion';
 
 const REASONS = [
   '新しいコスメや|スキンケアに、|誰よりも早く|出会いたい。',
@@ -19,16 +19,15 @@ export const ForYouScene: React.FC = () => {
 
   useSceneMotion(ref, ({ desktop, scope }) => {
     if (!desktop) {
-      revealOnce('.fy__head > *', '.fy__head');
-      // 各行：罫線が左から伸び、番号と文が順に立ち上がる（PC と同じ組み立て）
+      eachFromTo(scrubTl('.fy__head', { end: 'top 50%' }), '.fy__head > *', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 }, 0, 0.25);
+      // 各行：罫線が左から伸び、番号と文が順に立ち上がる（PC と同じ組み立て。スクロール同期）
       gsap.utils.toArray<HTMLElement>('.fy__item', scope).forEach((item) => {
-        gsap
-          .timeline({ defaults: { ease: 'power3.out' }, scrollTrigger: { trigger: item, start: 'top 90%', once: true } })
-          .from(item.querySelector('.fy__rule'), { scaleX: 0, duration: 1, ease: 'power2.inOut' }, 0)
-          .from(item.querySelector('.fy__no'), { opacity: 0, x: -16, duration: 0.7 }, 0.1)
-          .from(item.querySelector('.fy__reason'), { opacity: 0, y: 24, duration: 0.9 }, 0.18);
+        scrubTl(item, { start: 'top 92%', end: 'top 58%' })
+          .fromTo(item.querySelector('.fy__rule'), { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: 'power2.inOut' }, 0)
+          .fromTo(item.querySelector('.fy__no'), { opacity: 0, x: -18 }, { opacity: 1, x: 0, duration: 0.5 }, 0.1)
+          .fromTo(item.querySelector('.fy__reason'), { opacity: 0.1, y: 24 }, { opacity: 1, y: 0, duration: 0.6 }, 0.2);
       });
-      revealOnce('.fy__note', '.fy__note');
+      scrubTl('.fy__note', { start: 'top 95%', end: 'top 65%' }).fromTo('.fy__note', { opacity: 0, y: 24 }, { opacity: 1, y: 0 }, 0);
       return;
     }
     gsap

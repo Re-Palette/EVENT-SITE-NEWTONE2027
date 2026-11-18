@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { BrushUnderline, SplitChars } from './parts';
-import { gsap, useSceneMotion } from './motion';
+import { eachFromTo, gsap, scrubTl, useSceneMotion } from './motion';
 
 const waveA = '/newtone/wave-a.webp';
 /** コンセプトのアーチ写真（生成画像・仮。差し替えはこのファイル） */
@@ -20,7 +20,7 @@ const PILLARS = [
 export const ManifestoScene: React.FC = () => {
   const ref = useRef<HTMLElement>(null);
 
-  useSceneMotion(ref, ({ desktop }) => {
+  useSceneMotion(ref, ({ desktop, scope }) => {
     // 横顔のフレーム：下からせり上がり、中の写真はゆっくり逆方向へ流れる
     gsap
       .timeline({
@@ -33,14 +33,27 @@ export const ManifestoScene: React.FC = () => {
       .fromTo('.mf__vert', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.2 }, 0.26)
       .fromTo('.mf__wave', { xPercent: 10, yPercent: 8 }, { xPercent: -8, yPercent: -10, duration: 1 }, 0);
 
+    if (!desktop) {
+      // スマホ：要素ごとに、画面へ入るあいだ（下92%→中ほど55%）で完成する。上へ戻せば逆再生
+      const title = scrubTl('.mf__title', { start: 'top 90%', end: 'top 45%' });
+      title.fromTo('.mf .eyebrow', { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.2 }, 0);
+      eachFromTo(title, '.mf__title .char', { opacity: 0.12, yPercent: 60 }, { opacity: 1, yPercent: 0, duration: 0.2, ease: 'power2.out' }, 0.05, 0.04);
+      eachFromTo(title, '.mf__title .brush-path', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.25 }, 0.6, 0.08);
+      gsap.utils.toArray<HTMLElement>('.mf__body p', scope).forEach((p) => {
+        scrubTl(p).fromTo(p, { opacity: 0.14, y: 18 }, { opacity: 1, y: 0 }, 0);
+      });
+      eachFromTo(scrubTl('.mf__pillars', { start: 'top 94%', end: 'top 60%' }), '.mf__pillar', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.4 }, 0, 0.3);
+      return;
+    }
+
     // コピー：読む速さで文字が灯っていく
     gsap
       .timeline({
         defaults: { ease: 'none' },
-        scrollTrigger: { trigger: '.mf__text', start: 'top 88%', end: desktop ? 'bottom 80%' : 'bottom 82%', scrub: true },
+        scrollTrigger: { trigger: '.mf__text', start: 'top 88%', end: 'bottom 80%', scrub: true },
       })
       .fromTo('.mf .eyebrow', { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.1 }, 0)
-      .fromTo('.mf__title .char', desktop ? { opacity: 0.12 } : { opacity: 0.12, yPercent: 60 }, desktop ? { opacity: 1, duration: 0.08, stagger: 0.028 } : { opacity: 1, yPercent: 0, duration: 0.08, stagger: 0.028 }, 0.04)
+      .fromTo('.mf__title .char', { opacity: 0.12 }, { opacity: 1, duration: 0.08, stagger: 0.028 }, 0.04)
       .fromTo('.mf__title .brush-path', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.12, stagger: 0.04 }, '>-0.04')
       .fromTo('.mf__body p', { opacity: 0.14, y: 14 }, { opacity: 1, y: 0, duration: 0.16, stagger: 0.11 }, '>-0.08')
       .fromTo('.mf__pillar', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.14, stagger: 0.06 }, '>-0.06');

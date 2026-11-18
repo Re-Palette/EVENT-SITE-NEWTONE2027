@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { EXPERIENCE_CATEGORIES } from './site';
-import { gsap, parallax, revealOnce, useSceneMotion } from './motion';
+import { eachFromTo, gsap, parallax, scrubTl, useSceneMotion } from './motion';
 
 const N = EXPERIENCE_CATEGORIES.length;
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -9,21 +9,20 @@ const pad = (n: number) => String(n).padStart(2, '0');
  * SCENE 04 — CATEGORIES
  * デスクトップ：ピン留めした画面のなかで、カテゴリー名が1つずつ中央へ送られ、
  * HEROのガラス玉と同じ球体の色とコピーが入れ替わる（transform / opacity のみ・1タイムライン）。
- * スマートフォン：そのまま読める一覧。
+ * スマートフォン：ピン留めせず、一覧が1行ずつスクロールに同期して灯る。
  */
 export const CategoriesScene: React.FC = () => {
   const ref = useRef<HTMLElement>(null);
 
   useSceneMotion(ref, ({ desktop, scope }) => {
     if (!desktop) {
-      revealOnce('.ct__head > *', '.ct__head');
-      // 一覧：番号・名前・コピーが順に灯り、区切り線が左から伸びる
+      // 見出しが立ち上がり、一覧は1行ずつ、番号・名前・コピーがスクロールに合わせて灯る（上へ戻せば逆再生）
+      eachFromTo(scrubTl('.ct__head', { end: 'top 50%' }), '.ct__head > *', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 }, 0, 0.25);
       gsap.utils.toArray<HTMLElement>('.ct__item', scope).forEach((item) => {
-        gsap
-          .timeline({ defaults: { ease: 'power3.out' }, scrollTrigger: { trigger: item, start: 'top 90%', once: true } })
-          .from(item.querySelector('.ct__idx'), { opacity: 0, x: -14, duration: 0.6 }, 0)
-          .from(item.querySelector('.ct__name'), { opacity: 0, x: -30, duration: 0.9 }, 0.06)
-          .from(item.querySelector('.ct__copy'), { opacity: 0, y: 14, duration: 0.8 }, 0.2);
+        scrubTl(item, { start: 'top 92%', end: 'top 58%' })
+          .fromTo(item.querySelector('.ct__idx'), { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.5 }, 0)
+          .fromTo(item.querySelector('.ct__name'), { opacity: 0, x: -34 }, { opacity: 1, x: 0, duration: 0.8, ease: 'power2.out' }, 0.05)
+          .fromTo(item.querySelector('.ct__copy'), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6 }, 0.3);
       });
       parallax('.ct__bg', '.ct', { yPercent: -6 }, { yPercent: 6 });
       return;

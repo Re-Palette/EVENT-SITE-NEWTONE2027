@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Particles, SplitChars } from './parts';
-import { gsap, useSceneMotion } from './motion';
+import { gsap, isLite, SCRUB, useSceneMotion } from './motion';
 
 const heroBlur = '/newtone/hero-blur.webp';
 const waveB = '/newtone/wave-b.webp';
@@ -10,14 +10,24 @@ const waveB = '/newtone/wave-b.webp';
 export const PageHero: React.FC<{ en: string; ja: string; lead?: React.ReactNode }> = ({ en, ja, lead }) => {
   const ref = useRef<HTMLElement>(null);
 
-  useSceneMotion(ref, () => {
-    // 表示した瞬間に一度だけ（スクロールとは連動させない）
+  useSceneMotion(ref, ({ desktop }) => {
+    // 表示した瞬間の導入演出
     gsap
       .timeline({ defaults: { ease: 'power3.out' } })
       .from('.pg-hero__crumbs', { opacity: 0, y: 16, duration: 0.6 }, 0.05)
       .from('.pg-hero__en .char', { yPercent: 105, opacity: 0, duration: 0.9, stagger: 0.045 }, 0.1)
       .from(['.pg-hero__ja', '.pg-hero__lead'], { opacity: 0, y: 24, duration: 0.8, stagger: 0.1 }, 0.45)
       .from('.pg-hero .wave', { opacity: 0, xPercent: 6, duration: 1.6, ease: 'power2.out' }, 0);
+
+    // スマホ：ページを下へ送るあいだ、見出しは少し遅れて薄れ、背景の光は流れる（スクロール同期・上へ戻せば逆再生）
+    if (!desktop) {
+      const tl = gsap.timeline({
+        defaults: { ease: 'none' },
+        scrollTrigger: { trigger: ref.current, start: 'top top', end: 'bottom top', scrub: SCRUB, invalidateOnRefresh: true },
+      });
+      tl.fromTo('.pg-hero__inner', { y: 0, opacity: 1 }, { y: -48, opacity: 0.15 }, 0);
+      if (!isLite()) tl.fromTo('.pg-hero__bg', { yPercent: 0, scale: 1 }, { yPercent: 12, scale: 1.08 }, 0);
+    }
   });
 
   return (

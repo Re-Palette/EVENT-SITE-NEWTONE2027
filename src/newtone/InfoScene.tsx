@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { SITE } from './site';
-import { gsap, revealOnce, useSceneMotion } from './motion';
+import { eachFromTo, gsap, scrubTl, useSceneMotion } from './motion';
 
 const Pending: React.FC = () => (
   <>
@@ -28,15 +28,14 @@ export const InfoScene: React.FC<{ part?: 'all' | 'access' | 'news' }> = ({ part
     // 下層ページでは最初から画面内にあるので、スクロール連動のフェードはかけない（完成形のまま）
     if (part !== 'all') return;
     if (!desktop) {
-      if (has('.inf__head')) revealOnce('.inf__head > *', '.inf__head');
+      if (has('.inf__head')) eachFromTo(scrubTl('.inf__head', { end: 'top 50%' }), '.inf__head > *', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 }, 0, 0.2);
       if (has('.inf__card')) {
-        // 招待状が少し傾いたまま下から入り、各行が順に滑り込む（PC と同じ）
-        gsap
-          .timeline({ defaults: { ease: 'power3.out' }, scrollTrigger: { trigger: '.inf__card', start: 'top 88%', once: true } })
-          .from('.inf__card', { opacity: 0, y: 56, rotate: -2, duration: 1.1 }, 0)
-          .from('.inf__row', { opacity: 0, x: 22, duration: 0.8, stagger: 0.1 }, 0.35);
+        // 招待状が少し傾いたまま下から入り、各行が順に滑り込む（PC と同じ・スクロール同期）
+        const card = scrubTl('.inf__grid', { start: 'top 94%', end: 'top 45%' });
+        card.fromTo('.inf__card', { opacity: 0, y: 56, rotate: -2 }, { opacity: 1, y: 0, rotate: 0, duration: 0.6, ease: 'power2.out' }, 0);
+        eachFromTo(card, '.inf__row', { opacity: 0, x: 22 }, { opacity: 1, x: 0, duration: 0.35 }, 0.3, 0.12);
       }
-      if (has('.inf__news')) revealOnce('.inf__news', '.inf__news');
+      if (has('.inf__news')) scrubTl('.inf__news', { start: 'top 95%', end: 'top 60%' }).fromTo('.inf__news', { opacity: 0, y: 50 }, { opacity: 1, y: 0 }, 0);
       return;
     }
     const tl = gsap.timeline({

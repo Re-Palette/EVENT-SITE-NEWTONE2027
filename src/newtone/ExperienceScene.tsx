@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Phrases } from './parts';
-import { clipReveal, gsap, parallax, revealOnce, useSceneMotion } from './motion';
+import { eachFromTo, gsap, parallax, scrubTl, useSceneMotion } from './motion';
 
 const waveA = '/newtone/wave-a.webp';
 const waveB = '/newtone/wave-b.webp';
@@ -56,7 +56,7 @@ const artStyle = (art: Experience['art']): React.CSSProperties | undefined => {
 /**
  * SCENE 03 — EXPERIENCE
  * デスクトップ：1画面ぶんをピン留めし、縦スクロールで4つの体験が横へ流れるギャラリー。
- * スマートフォン：ピン留めせず、指で横にめくるカード。
+ * スマートフォン：ピン留めせず（指で横にめくるカードと競合するため）、縦スクロールに同期して動く。
  */
 export const ExperienceScene: React.FC = () => {
   const ref = useRef<HTMLElement>(null);
@@ -87,10 +87,12 @@ export const ExperienceScene: React.FC = () => {
         .fromTo('.xp__card', { opacity: 0, y: 90 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.12 }, 0.2);
       return;
     }
-    revealOnce('.xp__intro > *', '.xp__intro');
-    revealOnce('.xp__card', '.xp__cards', { y: 0, x: 44, stagger: 0.1 });
-    // カードの絵は幕が開くように現れ、スクロールに合わせて中の画像が横へゆっくり流れる（PC の .xp__art-in と同じ動き）
-    clipReveal('.xp__art', '.xp__cards', { stagger: 0.1, duration: 1.1 });
+    // スマホ：ピン留めせず、カードは指で横にめくれるまま。縦スクロールに同期して見出し・カード・絵が動く
+    eachFromTo(scrubTl('.xp__intro', { end: 'top 50%' }), '.xp__intro > *', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 }, 0, 0.15);
+    // カードは右から滑り込み（PC の横流れの代わり）、絵は幕が開くように現れ、中の画像は横へゆっくり流れる
+    const cards = scrubTl('.xp__cards', { start: 'top 94%', end: 'top 52%' });
+    eachFromTo(cards, '.xp__card', { opacity: 0, x: 60, scale: 0.94 }, { opacity: 1, x: 0, scale: 1, duration: 0.6 }, 0, 0.1);
+    eachFromTo(cards, '.xp__art', { clipPath: 'inset(0% 0% 100% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.7, ease: 'power2.inOut' }, 0.1, 0.1);
     parallax('.xp__art-in', '.xp__cards', { xPercent: -6 }, { xPercent: 6 });
   });
 

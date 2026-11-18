@@ -6,7 +6,7 @@ const titleMask = '/newtone/hero-title-mask.webp';
 /** スマートフォン用のキービジュアル（縦長のポスター。ヘッダー部分だけ画像から除き、HTML のヘッダーを重ねる） */
 const heroSp = '/newtone/hero-sp.webp';
 const heroLights = '/newtone/hero-lights.webp';
-import { gsap, isLite, useSceneMotion } from './motion';
+import { gsap, isLite, SCRUB, useSceneMotion } from './motion';
 
 /** PC（横長）版とスマホ（縦長）版の切り替え条件。CSS の .hero__desk / .hero__poster と同じ */
 const MQ_DESK = '(min-width: 768px) and (min-aspect-ratio: 6/5)';
@@ -74,21 +74,23 @@ export const HeroScene: React.FC = () => {
         .set('.hero__desk .hero__stage', { autoAlpha: 0 }, 0.999);
       return;
     }
-    // スマートフォン：表示した瞬間に一度だけ、ポスターがゆっくり寄りながら現れ、光の層が流れ込む
+    // スマートフォン：表示した瞬間にポスターがゆっくり寄りながら現れ、光の層が流れ込む（読み込み時の演出）
     gsap
       .timeline({ defaults: { ease: 'power3.out' } })
       .from('.poster__img', { scale: 1.1, opacity: 0.25, duration: 1.8, ease: 'power2.out' }, 0)
       .from('.hero__poster .hero__lights', { xPercent: -10, duration: 2.4, ease: 'power2.out' }, 0.1);
 
-    // 画面外へ抜ける間だけ穏やかに動かす（軽量端末では省く）
-    if (isLite()) return;
+    // 画面外へ抜けるあいだ、スクロールに同期して動かす（上へ戻せば逆再生）。ピン留めはしない
+    // ポスターは寄りながら少し遅れて抜け、後半で夜の色へ溶けていく。光の層も流れる（transform・opacity のみ）
+    const lite = isLite();
     const tl = gsap.timeline({
       defaults: { ease: 'none' },
-      scrollTrigger: { trigger: ref.current, start: 'top top', end: 'bottom top', scrub: true },
+      scrollTrigger: { trigger: ref.current, start: 'top top', end: 'bottom top', scrub: SCRUB, invalidateOnRefresh: true },
     });
-    // ポスターがゆっくり寄りながら少し遅れて抜け、光の層が流れる（transform・opacity のみ）
-    tl.fromTo('.poster__media', { scale: 1, yPercent: 0 }, { scale: 1.08, yPercent: 8 }, 0)
-      .fromTo('.hero__poster .hero__lights', { autoAlpha: 0, yPercent: 6 }, { autoAlpha: 0.6, yPercent: -8 }, 0);
+    tl.fromTo('.poster__media', { scale: 1, yPercent: 0 }, { scale: 1.08, yPercent: lite ? 0 : 8, duration: 1 }, 0)
+      .fromTo('.poster__media', { opacity: 1 }, { opacity: 0.2, duration: 0.5 }, 0.5);
+    // 軽量端末では光の層を省く
+    if (!lite) tl.fromTo('.hero__poster .hero__lights', { autoAlpha: 0, yPercent: 6 }, { autoAlpha: 0.6, yPercent: -8, duration: 1 }, 0);
   });
 
   return (

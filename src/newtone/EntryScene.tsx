@@ -6,7 +6,7 @@ import { CONTACT_HREF, SITE } from './site';
 import { SiteFooter } from './SiteFooter';
 import { SnsLinks } from './SnsLinks';
 import { ArrowRight, BrushUnderline, Particles, SplitChars } from './parts';
-import { gsap, useSceneMotion } from './motion';
+import { eachFromTo, gsap, scrubTl, useSceneMotion } from './motion';
 
 const contactHref = CONTACT_HREF;
 
@@ -17,7 +17,7 @@ const contactHref = CONTACT_HREF;
 export const EntryScene: React.FC<{ showSns?: boolean }> = ({ showSns = false }) => {
   const ref = useRef<HTMLElement>(null);
 
-  useSceneMotion(ref, ({ desktop }) => {
+  useSceneMotion(ref, ({ desktop, scope }) => {
     // 背景の巨大ロゴと光は、場面を通り過ぎるあいだずっとゆっくり流れる
     gsap
       .timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: '.en__stage', start: 'top bottom', end: 'bottom top', scrub: true } })
@@ -26,14 +26,16 @@ export const EntryScene: React.FC<{ showSns?: boolean }> = ({ showSns = false })
       .fromTo('.en__crowd', { yPercent: 22 }, { yPercent: 0, duration: 0.6 }, 0);
 
     if (!desktop) {
-      // 大きなコピーが1文字ずつせり上がり、筆致のラインが引かれ、残りが続く（PC と同じ組み立て・一度だけ）
-      gsap
-        .timeline({ defaults: { ease: 'power3.out' }, scrollTrigger: { trigger: '.en__inner', start: 'top 82%', once: true } })
-        .from('.en .eyebrow', { opacity: 0, y: 20, duration: 0.7 }, 0)
-        .from('.en__script', { opacity: 0, xPercent: -12, duration: 1 }, 0.1)
-        .from('.en__title .char', { opacity: 0, yPercent: 80, duration: 0.9, stagger: 0.05 }, 0.25)
-        .from('.en .brush-path', { strokeDashoffset: 1, duration: 1, stagger: 0.12, ease: 'power2.inOut' }, 0.9)
-        .from(['.en__lead', '.en .cta--main', '.en__pending', '.en__sns'], { opacity: 0, y: 30, duration: 0.9, stagger: 0.12 }, 1.0);
+      // 大きなコピーが1文字ずつせり上がり、筆致のラインが引かれ、残りが続く（PC と同じ組み立て・スクロール同期）
+      const title = scrubTl('.en__title', { start: 'top 90%', end: 'top 50%' });
+      title
+        .fromTo('.en .eyebrow', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.15 }, 0)
+        .fromTo('.en__script', { opacity: 0, xPercent: -12 }, { opacity: 1, xPercent: 0, duration: 0.25, ease: 'power2.out' }, 0.05);
+      eachFromTo(title, '.en__title .char', { opacity: 0, yPercent: 80 }, { opacity: 1, yPercent: 0, duration: 0.3, ease: 'power2.out' }, 0.12, 0.04);
+      eachFromTo(title, '.en .brush-path', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.25 }, 0.65, 0.06);
+      for (const sel of ['.en__lead', '.en .cta--main', '.en__pending', '.en__sns']) {
+        if (scope.querySelector(sel)) scrubTl(sel, { start: 'top 96%', end: 'top 70%' }).fromTo(sel, { opacity: 0, y: 30 }, { opacity: 1, y: 0 }, 0);
+      }
       return;
     }
     gsap

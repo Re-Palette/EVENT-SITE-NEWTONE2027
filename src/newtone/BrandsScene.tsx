@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { BRANDS, BRAND_PLACEHOLDER_COUNT, type Brand } from './brands';
 import { Phrases } from './parts';
-import { gsap, parallax, revealChars, revealOnce, useSceneMotion } from './motion';
+import { eachFromTo, gsap, parallax, scrubTl, useSceneMotion } from './motion';
 
 const HUES = ['#ff4fa3', '#a35cf0', '#4f6dff', '#e46bff', '#7f93f6'];
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -54,21 +54,20 @@ export const BrandsScene: React.FC = () => {
 
   useSceneMotion(ref, ({ desktop, scope }) => {
     if (!desktop) {
-      // 見出し：LINEUP が1文字ずつせり上がり、続けて日本語と本文が現れる
-      gsap.from('.br .eyebrow', { opacity: 0, x: -24, duration: 0.8, ease: 'power3.out', scrollTrigger: { trigger: '.br__head', start: 'top 88%', once: true } });
-      revealChars('.br__en .char', '.br__head', { stagger: 0.07 });
-      revealOnce(['.br__ja', '.br__lead'], '.br__head', { delay: 0.35, stagger: 0.12 });
-      // カード：左右交互に少し斜めから入り、拡大しながら定位置へ
+      // 見出し：LINEUP が1文字ずつせり上がり、続けて日本語と本文が現れる（スクロール同期）
+      const head = scrubTl('.br__head', { start: 'top 90%', end: 'top 40%' });
+      head.fromTo('.br .eyebrow', { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.2 }, 0);
+      eachFromTo(head, '.br__en .char', { yPercent: 105, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.35, ease: 'power2.out' }, 0.05, 0.07);
+      eachFromTo(head, ['.br__ja', '.br__lead'], { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3 }, 0.5, 0.12);
+      // カード：左右交互に少し傾いたまま入り、拡大しながら定位置へ
       gsap.utils.toArray<HTMLElement>('.br__item', scope).forEach((item, i) => {
-        gsap.from(item, {
-          opacity: 0,
-          y: 56,
-          x: i % 2 ? 14 : -14,
-          scale: 0.94,
-          duration: 1,
-          ease: 'power3.out',
-          scrollTrigger: { trigger: item, start: 'top 92%', once: true },
-        });
+        // トリガー（li）自体は動かさず、中のカードを動かす（トリガー位置がずれないように）
+        scrubTl(item, { start: 'top 95%', end: 'top 58%' }).fromTo(
+          item.firstElementChild,
+          { opacity: 0, y: 56, x: i % 2 ? 14 : -14, scale: 0.94, rotate: i % 2 ? 2 : -2 },
+          { opacity: 1, y: 0, x: 0, scale: 1, rotate: 0 },
+          0,
+        );
       });
       parallax('.br__bg', '.br', { yPercent: -5 }, { yPercent: 5 });
       return;

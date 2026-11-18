@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { SplitChars } from './parts';
 import { SnsLinks } from './SnsLinks';
-import { gsap, revealOnce, useSceneMotion } from './motion';
+import { eachFromTo, gsap, scrubTl, useSceneMotion } from './motion';
 
 /**
  * SNS — 公式SNS（FOLLOW US）
@@ -12,8 +12,10 @@ export const SnsScene: React.FC = () => {
 
   useSceneMotion(ref, ({ desktop }) => {
     if (!desktop) {
-      revealOnce('.sns-sc__head > *', '.sns-sc__head');
-      revealOnce('.sns__item', '.sns__list', { y: 36, scale: 0.94, stagger: 0.12 });
+      const head = scrubTl('.sns-sc__head', { start: 'top 90%', end: 'top 45%' });
+      eachFromTo(head, '.sns-sc__en .char', { yPercent: 105, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.35, ease: 'power2.out' }, 0, 0.05);
+      eachFromTo(head, ['.sns-sc .eyebrow', '.sns-sc__ja', '.sns-sc__lead'], { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3 }, 0.2, 0.12);
+      eachFromTo(scrubTl('.sns__list', { start: 'top 95%', end: 'top 55%' }), '.sns__item', { opacity: 0, y: 36, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.5 }, 0, 0.2);
       return;
     }
     gsap
