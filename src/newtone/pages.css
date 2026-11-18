@@ -465,6 +465,219 @@
   }
 }
 
+/* =========================================================
+   SNS — 公式SNS（FOLLOW US）。トップの専用場面と CONTACT で共通のカード
+   ========================================================= */
+.nt .sns-sc {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding: clamp(80px, 12vh, 150px) max(24px, 6vw);
+  background:
+    radial-gradient(44% 56% at 100% 0%, rgba(255, 79, 163, 0.14), transparent 70%),
+    radial-gradient(40% 50% at 0% 100%, rgba(79, 109, 255, 0.16), transparent 70%),
+    linear-gradient(180deg, #0b1146 0%, var(--c-deep) 100%);
+}
+
+.nt .sns-sc__title {
+  margin: clamp(14px, 2vh, 22px) 0 0;
+  font-weight: 400;
+}
+
+.nt .sns-sc__en {
+  display: block;
+  overflow: hidden;
+  font-family: var(--f-display);
+  font-size: clamp(56px, 9vw, 150px);
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  background: var(--grad-line);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.nt .sns-sc__en .char {
+  color: transparent;
+}
+
+.nt .sns-sc__ja {
+  display: block;
+  margin-top: clamp(10px, 1.6vh, 18px);
+  font-family: var(--f-mincho);
+  font-weight: 600;
+  font-size: clamp(17px, 1.6vw, 26px);
+  letter-spacing: 0.2em;
+}
+
+.nt .sns-sc__lead {
+  max-width: 36em;
+  margin: clamp(16px, 2.6vh, 26px) 0 0;
+  font-size: clamp(14px, 1.05vw, 16px);
+  line-height: 2;
+  letter-spacing: 0.08em;
+  color: rgba(247, 244, 255, 0.8);
+}
+
+.nt .sns-sc .sns__list {
+  margin-top: clamp(36px, 6vh, 64px);
+}
+
+.nt .sns__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 14px;
+}
+
+.nt .sns__card {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 1.6vw, 24px);
+  min-height: 112px;
+  padding: 22px clamp(20px, 2vw, 30px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  color: #fff;
+  text-align: left;
+  text-decoration: none;
+  transition: border-color 0.35s ease, background-color 0.35s ease;
+}
+
+.nt .sns__card:hover,
+.nt .sns__card:focus-visible {
+  border-color: rgba(255, 79, 163, 0.7);
+  background-color: rgba(255, 79, 163, 0.06);
+}
+
+.nt .sns__card:focus-visible {
+  outline: 2px solid var(--c-lavender);
+  outline-offset: 3px;
+}
+
+.nt .sns__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--grad-cta);
+  color: #fff;
+}
+
+.nt .sns__icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.nt .sns__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.nt .sns__name {
+  font-family: var(--f-display);
+  font-size: clamp(22px, 2vw, 30px);
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+}
+
+.nt .sns__handle {
+  font-family: var(--f-sans-en);
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  color: var(--c-lavender);
+  overflow-wrap: anywhere;
+}
+
+.nt .sns__lead {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  line-height: 1.7;
+  color: rgba(247, 244, 255, 0.78);
+}
+
+.nt .sns__out {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: rgba(247, 244, 255, 0.7);
+  transition: transform 0.35s ease, color 0.35s ease;
+}
+
+.nt .sns__card:hover .sns__out {
+  transform: translate(3px, -3px);
+  color: var(--c-pink);
+}
+
+/* CONTACT（ENTRY 場面の中）に置くとき */
+.nt .en__sns {
+  width: min(100%, 440px);
+  margin-top: clamp(40px, 7vh, 72px);
+}
+
+.nt .en__sns-lead {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.9;
+  letter-spacing: 0.1em;
+  color: rgba(247, 244, 255, 0.88);
+}
+
+.nt .en__sns .sns__list {
+  grid-template-columns: 1fr;
+}
+
+/* フッターの小さなSNSリンク */
+.nt .site-footer__sns {
+  display: flex;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nt .site-footer__sns a {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+  color: #fff;
+  transition: border-color 0.3s ease, color 0.3s ease;
+}
+
+.nt .site-footer__sns a:hover,
+.nt .site-footer__sns a:focus-visible {
+  border-color: var(--c-pink);
+  color: var(--c-pink);
+}
+
+.nt .site-footer__sns svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 767px) {
+  .nt .sns__card {
+    padding: 18px 18px;
+  }
+
+  .nt .sns__icon {
+    width: 52px;
+    height: 52px;
+  }
+}
+
 /* トップでは HERO の余白ぶん MANIFESTO を引き上げているが、下層ページの見出しの後では重ならないよう戻す */
 @media (min-width: 768px) and (min-aspect-ratio: 6/5) and (prefers-reduced-motion: no-preference) {
   .nt.nt .pg-hero + .mf {

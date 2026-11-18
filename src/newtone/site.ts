@@ -46,6 +46,22 @@ export const SITE: SiteConfig = {
   ],
 };
 
+/**
+ * 公式SNSアカウント（トップの SNS 場面・CONTACT・フッターで共通利用）。
+ * 確定したアカウントだけを載せること。X・YouTube など他のアカウントが確定したら、ここに1行足すだけで全箇所に反映されます
+ * （アイコンを足す場合は SnsLinks.tsx の SNS_ICONS に key を追加。未登録の key は汎用アイコンで表示）。
+ */
+export interface SnsAccount {
+  key: string;
+  label: string;
+  handle: string;
+  url: string;
+}
+
+export const SNS: SnsAccount[] = [
+  { key: 'instagram', label: 'Instagram', handle: '@newtone_2027', url: 'https://www.instagram.com/newtone_2027/' },
+];
+
 /** 参加・お問い合わせの窓口（フォームURL、なければメール）。未設定なら null */
 export const CONTACT_HREF = SITE.contact.entryUrl ?? (SITE.contact.email ? `mailto:${SITE.contact.email}` : null);
 

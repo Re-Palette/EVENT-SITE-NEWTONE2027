@@ -8,6 +8,7 @@ import { BrandsScene } from './BrandsScene';
 import { PartnersScene } from './PartnersScene';
 import { ForYouScene } from './ForYouScene';
 import { InfoScene } from './InfoScene';
+import { SnsScene } from './SnsScene';
 import { EntryScene } from './EntryScene';
 import { PageHero } from './PageHero';
 import { PageNext } from './PageNext';
@@ -51,6 +52,7 @@ export const HomePage: React.FC = () => (
     <PartnersScene />
     <ForYouScene />
     <InfoScene />
+    <SnsScene />
     <EntryScene />
   </>
 );
@@ -119,7 +121,7 @@ export const ContactPage: React.FC = () => (
     }
     footer={false}
   >
-    <EntryScene />
+    <EntryScene showSns />
   </SubPage>
 );
 

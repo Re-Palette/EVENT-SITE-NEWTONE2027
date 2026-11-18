@@ -4,6 +4,7 @@ const waveB = '/newtone/wave-b.webp';
 const crowd = '/newtone/crowd.webp';
 import { CONTACT_HREF, SITE } from './site';
 import { SiteFooter } from './SiteFooter';
+import { SnsLinks } from './SnsLinks';
 import { ArrowRight, BrushUnderline, Particles, SplitChars } from './parts';
 import { gsap, revealOnce, useSceneMotion } from './motion';
 
@@ -13,7 +14,7 @@ const contactHref = CONTACT_HREF;
  * SCENE 08 — ENTRY / JOIN ＋ フッター
  * 最後は HERO の光へ戻り、大きなコピーと1つのボタンだけを残す。
  */
-export const EntryScene: React.FC = () => {
+export const EntryScene: React.FC<{ showSns?: boolean }> = ({ showSns = false }) => {
   const ref = useRef<HTMLElement>(null);
 
   useSceneMotion(ref, ({ desktop }) => {
@@ -25,7 +26,7 @@ export const EntryScene: React.FC = () => {
       .fromTo('.en__crowd', { yPercent: 22 }, { yPercent: 0, duration: 0.6 }, 0);
 
     if (!desktop) {
-      revealOnce(['.en .eyebrow', '.en__script', '.en__title', '.en__lead', '.en .cta--main', '.en__pending'], '.en__inner', { stagger: 0.1 });
+      revealOnce(['.en .eyebrow', '.en__script', '.en__title', '.en__lead', '.en .cta--main', '.en__pending', '.en__sns'], '.en__inner', { stagger: 0.1 });
       return;
     }
     gsap
@@ -34,7 +35,7 @@ export const EntryScene: React.FC = () => {
       .fromTo('.en__script', { opacity: 0, xPercent: -12 }, { opacity: 1, xPercent: 0, duration: 0.25, ease: 'power2.out' }, 0.05)
       .fromTo('.en__title .char', { opacity: 0, yPercent: 70 }, { opacity: 1, yPercent: 0, duration: 0.3, stagger: 0.025, ease: 'power2.out' }, 0.12)
       .fromTo('.en .brush-path', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.2, stagger: 0.05 }, '>-0.08')
-      .fromTo(['.en__lead', '.en .cta--main', '.en__pending'], { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.22, stagger: 0.07 }, '>-0.12');
+      .fromTo(['.en__lead', '.en .cta--main', '.en__pending', '.en__sns'], { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.22, stagger: 0.07 }, '>-0.12');
   });
 
   return (
@@ -89,6 +90,12 @@ export const EntryScene: React.FC = () => {
                 受付窓口は準備が整い次第、こちらでご案内します。
               </p>
             </>
+          )}
+          {showSns && (
+            <div className="en__sns">
+              <p className="en__sns-lead">最新情報は公式SNSで発信中です。ぜひフォローしてください。</p>
+              <SnsLinks />
+            </div>
           )}
         </div>
       </div>
