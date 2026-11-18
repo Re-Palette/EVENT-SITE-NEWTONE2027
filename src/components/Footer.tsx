@@ -90,7 +90,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenEntry }) => {
             
             {/* Social Icons */}
             <div className="flex items-center gap-3 pt-2">
-              <a href="#" className="w-9 h-9 rounded-full bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-700 hover:text-zinc-950 flex items-center justify-center transition-colors">
+              <a href="https://www.instagram.com/newtone_2027/" target="_blank" rel="noopener noreferrer" aria-label="NEWTONE 2027 Instagram" className="w-9 h-9 rounded-full bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-700 hover:text-zinc-950 flex items-center justify-center transition-colors">
                 <Instagram className="w-4 h-4" />
               </a>
               <a href="#" className="w-9 h-9 rounded-full bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-700 hover:text-zinc-950 flex items-center justify-center transition-colors">
