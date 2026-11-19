@@ -24,12 +24,25 @@ function useRouteChange() {
         : 'ページが見つかりません | NEWTONE 2027';
     if (first.current) {
       first.current = false;
+      // #id 付きで直接開いたとき（例: /contact#contact-form）：場面の高さが確定してから着地させる
+      if (hash) {
+        const go = () => {
+          const t = document.getElementById(decodeURIComponent(hash.slice(1)));
+          if (t) window.scrollTo(0, anchorY(t));
+        };
+        const t1 = window.setTimeout(go, 400);
+        const t2 = window.setTimeout(go, 1200);
+        return () => {
+          clearTimeout(t1);
+          clearTimeout(t2);
+        };
+      }
       return;
     }
     // 戻る・進む（POP）はブラウザが復元する位置のまま。リンクでの移動だけ先頭（または #id）へ
     if (navType !== 'POP') {
       if (hash) {
-        const t = document.getElementById(hash.slice(1));
+        const t = document.getElementById(decodeURIComponent(hash.slice(1)));
         if (t) window.scrollTo(0, anchorY(t));
       }
       else scrollToTop();

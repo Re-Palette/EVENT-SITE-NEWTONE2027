@@ -10,10 +10,11 @@ import { ForYouScene } from './ForYouScene';
 import { InfoScene } from './InfoScene';
 import { SnsScene } from './SnsScene';
 import { EntryScene } from './EntryScene';
+import { ContactForm } from './ContactForm';
 import { PageHero } from './PageHero';
 import { PageNext } from './PageNext';
 import { SiteFooter } from './SiteFooter';
-import { CONTACT_HREF, NAV_LINKS, SITE } from './site';
+import { NAV_LINKS, SITE } from './site';
 import { ArrowRight } from './parts';
 
 /** 各ページの見出し（英字・日本語は site.ts の NAV_LINKS と共通） */
@@ -110,18 +111,15 @@ export const NewsPage: React.FC = () => (
   </SubPage>
 );
 
-/** CONTACT は ENTRY 場面（フッター込み）をそのまま使う */
+/** CONTACT：問い合わせフォーム → 公式SNS・フッター（ENTRY 場面。ボタンはフォームがすぐ上にあるので出さない） */
 export const ContactPage: React.FC = () => (
   <SubPage
     href="/contact"
-    lead={
-      CONTACT_HREF
-        ? 'ご参加や協賛・パートナーについてのお問い合わせはこちらから。'
-        : 'ご参加や協賛・パートナーについてのお問い合わせ窓口は、準備が整い次第こちらでご案内します。'
-    }
+    lead="出店・協賛・取材・ご来場についてなど、NEWTONE 2027 へのお問い合わせはこちらのフォームから。"
     footer={false}
   >
-    <EntryScene showSns />
+    <ContactForm />
+    <EntryScene showSns cta={false} />
   </SubPage>
 );
 

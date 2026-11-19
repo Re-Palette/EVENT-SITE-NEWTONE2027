@@ -1,20 +1,20 @@
 import React, { useRef } from 'react';
+import { Link } from 'react-router-dom';
 const heroBlur = '/newtone/hero-blur.webp';
 const waveB = '/newtone/wave-b.webp';
 const crowd = '/newtone/crowd.webp';
-import { CONTACT_HREF, SITE } from './site';
+import { CONTACT_EXTERNAL, CONTACT_HREF } from './site';
 import { SiteFooter } from './SiteFooter';
 import { SnsLinks } from './SnsLinks';
 import { ArrowRight, BrushUnderline, Particles, SplitChars } from './parts';
 import { eachFromTo, gsap, scene, useSceneMotion } from './motion';
 
-const contactHref = CONTACT_HREF;
-
 /**
  * SCENE 08 — ENTRY / JOIN ＋ フッター
  * 最後は HERO の光へ戻り、大きなコピーと1つのボタンだけを残す。
  */
-export const EntryScene: React.FC<{ showSns?: boolean }> = ({ showSns = false }) => {
+/** cta: false で参加ボタンを出さない（CONTACT ページはすぐ上にフォームがあるため） */
+export const EntryScene: React.FC<{ showSns?: boolean; cta?: boolean }> = ({ showSns = false, cta = true }) => {
   const ref = useRef<HTMLElement>(null);
 
   useSceneMotion(ref, ({ desktop, scope }) => {
@@ -22,7 +22,7 @@ export const EntryScene: React.FC<{ showSns?: boolean }> = ({ showSns = false })
     const stage = scope.querySelector<HTMLElement>('.en__stage');
     if (!stage) return;
     const s = scene(stage, desktop, { start: 'top 75%', end: 'top 20%' });
-    const rest = ['.en__lead', '.en .cta--main', '.en__pending', '.en__sns'].filter((sel) => scope.querySelector(sel));
+    const rest = ['.en__lead', '.en .cta--main', '.en__sns'].filter((sel) => scope.querySelector(sel));
 
     if (!desktop) {
       // 大きなコピーが1文字ずつせり上がり、筆致のラインが引かれ、残りが続く（PC と同じ組み立て・スクロール同期）
@@ -95,26 +95,18 @@ export const EntryScene: React.FC<{ showSns?: boolean }> = ({ showSns = false })
             <br />
             NEWTONE 2027 で、お待ちしています。
           </p>
-          {contactHref ? (
-            <a
-              className="cta cta--main"
-              href={contactHref}
-              {...(SITE.contact.entryUrl ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-            >
-              <span>参加・お問い合わせ</span>
-              <ArrowRight className="cta__arrow" />
-            </a>
-          ) : (
-            <>
-              <span className="cta cta--main" role="link" aria-disabled="true" aria-describedby="entry-pending">
+          {cta &&
+            (CONTACT_EXTERNAL ? (
+              <a className="cta cta--main" href={CONTACT_HREF} target="_blank" rel="noopener noreferrer">
                 <span>参加・お問い合わせ</span>
                 <ArrowRight className="cta__arrow" />
-              </span>
-              <p id="entry-pending" className="en__pending">
-                受付窓口は準備が整い次第、こちらでご案内します。
-              </p>
-            </>
-          )}
+              </a>
+            ) : (
+              <Link className="cta cta--main" to={CONTACT_HREF}>
+                <span>参加・お問い合わせ</span>
+                <ArrowRight className="cta__arrow" />
+              </Link>
+            ))}
           {showSns && (
             <div className="en__sns">
               <p className="en__sns-lead">最新情報は公式SNSで発信中です。ぜひフォローしてください。</p>

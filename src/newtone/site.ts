@@ -62,8 +62,13 @@ export const SNS: SnsAccount[] = [
   { key: 'instagram', label: 'Instagram', handle: '@newtone_2027', url: 'https://www.instagram.com/newtone_2027/' },
 ];
 
-/** 参加・お問い合わせの窓口（フォームURL、なければメール）。未設定なら null */
-export const CONTACT_HREF = SITE.contact.entryUrl ?? (SITE.contact.email ? `mailto:${SITE.contact.email}` : null);
+/**
+ * 参加・お問い合わせの窓口。サイト内の CONTACT ページのフォーム（/api/contact → メール送信）へ。
+ * ホームの ENTRY 場面の CTA が使う。外部フォームに切り替えたいときは SITE.contact.entryUrl を設定する。
+ */
+export const CONTACT_HREF = SITE.contact.entryUrl ?? '/contact#contact-form';
+/** CONTACT_HREF が外部URL（別タブで開く）か */
+export const CONTACT_EXTERNAL = SITE.contact.entryUrl !== null;
 
 /**
  * 上部ナビ＝各ページ。x: 参考ビジュアル(1672px幅)上での各項目の中心座標。
