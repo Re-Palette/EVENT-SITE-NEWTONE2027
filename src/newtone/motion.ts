@@ -61,6 +61,15 @@ export function scrollToTop(smooth = false) {
   window.scrollTo(0, 0);
 }
 
+/** 要素の先頭へスクロール。慣性スクロールがあればそれで、なければ通常のスムーズスクロール */
+export function scrollToEl(el: HTMLElement) {
+  if (activeLenis) {
+    activeLenis.scrollTo(el, { duration: 1.4 });
+    return;
+  }
+  el.scrollIntoView({ behavior: 'auto', block: 'start' });
+}
+
 /**
  * 慣性スクロール（Lenis。設定は ARQO サイトと同じ）を GSAP の ticker で駆動し、ScrollTrigger と同期させる。
  * フォント・画像の読み込みや bfcache 復帰時に位置を再計算する。

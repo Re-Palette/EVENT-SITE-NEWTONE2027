@@ -24,115 +24,120 @@
 }
 
 /* =========================================================
-   SCENE 02 — MANIFESTO
+   SCENE 02 — CONCEPT
+   PC（MQ_DESKTOP と同条件）：キービジュアルを全面に敷き、各要素を % 配置（モックは 1774×887）。
+   スマホ・縦長：ビジュアルを上に、コピーをその下のネイビーに積む。
    ========================================================= */
 .nt .mf {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  padding: var(--sec-y) var(--pad) clamp(72px, 12vh, 150px);
-  background: linear-gradient(180deg, var(--c-navy) 0%, #10175f 55%, var(--c-deep) 100%);
+  display: flex;
+  flex-direction: column;
+  background: var(--c-deep);
   scroll-margin-top: 0;
+  --mf-pad: max(22px, 6vw);
 }
 
 .nt .mf__bg {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(60% 50% at 92% 8%, rgba(163, 92, 240, 0.26), transparent 70%),
-    radial-gradient(50% 45% at 0% 78%, rgba(255, 79, 163, 0.16), transparent 70%);
-}
-
-.nt .mf__wave {
-  right: -14%;
-  top: 34%;
-  width: min(1100px, 78%);
-  aspect-ratio: 1100 / 614;
-  opacity: 0.42;
-}
-
-.nt .mf__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  align-items: center;
-  gap: clamp(48px, 8vw, 140px);
-  max-width: 1480px;
-  margin: 0 auto;
-}
-
-.nt .mf__visual {
   position: relative;
-  justify-self: center;
-  width: min(100%, 430px);
-}
-
-/* アーチ型の窓。写真は枠より少し大きく、スクロールで中だけが流れる */
-.nt .mf__frame {
-  position: relative;
-  aspect-ratio: 10 / 13.2;
-  border-radius: 999px 999px 20px 20px;
   overflow: hidden;
-  background: #1a1560;
-  box-shadow: 0 50px 100px -40px rgba(255, 79, 163, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.24);
+  width: 100%;
+  aspect-ratio: 1000 / 887;
+  pointer-events: none;
+}
+
+.nt .mf__bg picture {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .nt .mf__img {
-  position: absolute;
-  left: 0;
-  top: -7%;
+  display: block;
   width: 100%;
-  height: 114%;
+  height: 100%;
   object-fit: cover;
-  object-position: 50% 30%;
+  object-position: 50% 50%;
+  transform-origin: 50% 50%;
   will-change: transform;
 }
 
-.nt .mf__frame::after {
-  content: '';
+/* 上端は HERO、下端は次の帯へ溶け込ませる */
+.nt .mf__shade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(13, 20, 82, 0.1) 40%, rgba(13, 20, 82, 0.62) 100%);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
-  border-radius: inherit;
+  background:
+    linear-gradient(180deg, var(--c-navy) 0%, rgba(13, 20, 82, 0) 16%),
+    linear-gradient(0deg, var(--c-deep) 0%, rgba(7, 11, 46, 0.86) 14%, rgba(7, 11, 46, 0) 46%);
 }
 
-.nt .mf__script {
-  position: absolute;
-  left: -13%;
-  bottom: 7%;
+/* ---- 共通：小さな英字ラベル ---- */
+.nt .mf__eyebrow,
+.nt .mf__cue-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 0;
-  rotate: -7deg;
-  font-family: var(--f-script);
-  font-size: clamp(34px, 4.3vw, 74px);
-  line-height: 1;
-  white-space: nowrap;
-  color: var(--c-pink);
-  text-shadow: 0 0 26px rgba(255, 79, 163, 0.5);
-}
-
-.nt .mf__vert {
-  position: absolute;
-  top: 16%;
-  right: -34px;
-  margin: 0;
-  writing-mode: vertical-rl;
   font-family: var(--f-sans-en);
   font-weight: 500;
-  font-size: 10px;
-  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: rgba(247, 244, 255, 0.86);
+}
+
+.nt .mf__eyebrow {
+  gap: 1.5em;
+  font-size: 12px;
+  letter-spacing: 0.34em;
+}
+
+.nt .mf__eyebrow-text,
+.nt .mf__cue-text {
   white-space: nowrap;
-  color: rgba(247, 244, 255, 0.6);
+}
+
+.nt .mf__rule {
+  display: block;
+  flex: none;
+  width: clamp(48px, 15vw, 90px);
+  height: 1px;
+}
+
+.nt .mf__rule--l {
+  background: linear-gradient(90deg, rgba(189, 184, 246, 0), rgba(189, 184, 246, 0.7));
+  transform-origin: 100% 50%;
+}
+
+.nt .mf__rule--r {
+  background: linear-gradient(90deg, rgba(189, 184, 246, 0.7), rgba(189, 184, 246, 0));
+  transform-origin: 0 50%;
+}
+
+.nt .mf__tag {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-family: var(--f-sans-en);
+  font-weight: 400;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #fff;
+  text-shadow: 0 0 18px rgba(7, 11, 46, 0.7);
+}
+
+.nt .mf__tag-line {
+  display: block;
+  flex: none;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+  transform-origin: 0 50%;
 }
 
 .nt .mf__title {
-  margin: clamp(22px, 3.4vh, 40px) 0 0;
+  margin: 0;
   font-family: var(--f-mincho);
-  font-weight: 600;
-  font-size: clamp(38px, 5.5vw, 100px);
-  line-height: 1.32;
-  letter-spacing: 0.05em;
+  font-weight: 500;
+  color: #fff;
 }
 
 .nt .mf__title .line {
@@ -141,91 +146,253 @@
 }
 
 .nt .mf__future {
-  position: relative;
   display: inline-block;
   color: var(--c-pink);
 }
 
+/* 細く光るピンク→ヴァイオレットの1本線。右へ向かってわずかに細くなる */
+.nt .mf__glow {
+  display: block;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(255, 79, 163, 0) 0%, #ff4fa3 34%, #b45cf0 72%, #6f8bff 100%);
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+  filter: drop-shadow(0 0 6px rgba(255, 79, 163, 0.65));
+  transform-origin: 0 50%;
+}
+
 .nt .mf__body {
-  margin-top: clamp(30px, 5vh, 56px);
-  max-width: 36em;
-  font-size: clamp(14px, 1.1vw, 17px);
-  line-height: 2.25;
-  letter-spacing: 0.08em;
-  color: rgba(247, 244, 255, 0.86);
+  color: rgba(247, 244, 255, 0.92);
 }
 
 .nt .mf__body p {
   margin: 0;
 }
 
-.nt .mf__pillars {
-  list-style: none;
-  margin: clamp(36px, 6vh, 72px) 0 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(14px, 2vw, 36px);
-}
-
-.nt .mf__pillar {
+.nt .mf__cue {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 10px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.28);
+  padding: 6px 12px;
+  border: 0;
+  background: none;
+  color: rgba(247, 244, 255, 0.86);
+  cursor: pointer;
+  font: inherit;
 }
 
-.nt .mf__pillar-en {
-  font-family: var(--f-display);
-  font-size: clamp(20px, 1.9vw, 32px);
-  letter-spacing: 0.04em;
-  line-height: 1;
+.nt .mf__cue-row {
+  gap: 1.7em;
+  font-size: 11px;
+  letter-spacing: 0.42em;
 }
 
-.nt .mf__pillar:nth-child(2) .mf__pillar-en {
-  color: var(--c-pink);
+.nt .mf__cue-line {
+  display: block;
+  width: clamp(40px, 6vw, 100px);
+  height: 1px;
+  background: rgba(189, 184, 246, 0.5);
 }
 
-.nt .mf__pillar-ja {
-  font-size: clamp(12px, 0.9vw, 14px);
-  letter-spacing: 0.1em;
-  color: rgba(247, 244, 255, 0.72);
+.nt .mf__chev {
+  display: block;
+  width: 15px;
+  height: 9px;
 }
 
-@media (max-width: 899px) {
-  .nt .mf__grid {
-    grid-template-columns: 1fr;
-    gap: 64px;
+@keyframes mf-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .nt .mf__chev {
+    animation: mf-bob 2.2s ease-in-out infinite;
+  }
+}
+
+.nt .mf__cue:focus-visible {
+  outline: 2px solid var(--c-pink);
+  outline-offset: 4px;
+}
+
+/* ---- スマホ・縦長 ---- */
+@media not all and (min-width: 768px) and (min-aspect-ratio: 6/5) {
+  .nt .mf {
+    padding-bottom: 28px;
   }
 
-  .nt .mf__visual {
-    width: min(68vw, 340px);
+  .nt .mf__bg {
+    margin-bottom: -6vw;
   }
 
-  .nt .mf__script {
-    left: -18%;
-    font-size: clamp(34px, 10vw, 60px);
+  .nt .mf__tag {
+    position: absolute;
+    left: var(--mf-pad);
+    top: calc(min(100vw, 768px) * 0.887 - 15vw);
+    z-index: 2;
+    font-size: clamp(11px, 3.3vw, 20px);
+    letter-spacing: 0.42em;
+  }
+
+  .nt .mf__tag-line {
+    width: 14vw;
+    margin-left: 0.4em;
+  }
+
+  .nt .mf__eyebrow {
+    position: relative;
+    z-index: 1;
+    margin: 0 var(--mf-pad);
+  }
+
+  .nt .mf__text {
+    padding: 28px var(--mf-pad) 0;
   }
 
   .nt .mf__title {
-    font-size: clamp(38px, 10.6vw, 84px);
+    font-size: clamp(36px, 10.4vw, 78px);
+    line-height: 1.34;
+    letter-spacing: 0.08em;
   }
 
-  .nt .mf__pillars {
-    grid-template-columns: 1fr;
-    gap: 0;
+  .nt .mf__glow {
+    width: min(78%, 420px);
+    margin: 18px 0 0 auto;
+    transform: rotate(-3deg);
+    transform-origin: 0 50%;
   }
 
-  .nt .mf__pillar {
-    flex-direction: row;
-    align-items: baseline;
-    justify-content: space-between;
-    padding: 16px 0;
+  .nt .mf__body {
+    margin-top: 26px;
+    font-size: clamp(13px, 3.5vw, 17px);
+    line-height: 2.2;
+    letter-spacing: 0.08em;
   }
 
-  .nt .mf__pillar-en {
-    font-size: 22px;
+  .nt .mf__cue {
+    margin: 40px auto 0;
+  }
+}
+
+/* ---- PC ---- */
+@media (min-width: 768px) and (min-aspect-ratio: 6/5) {
+  .nt .mf {
+    display: block;
+    min-height: 100svh;
+    height: 56.3vw;
+    max-height: max(100svh, 760px);
+  }
+
+  .nt .mf__bg {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  /* 画像は上詰め。横長(2:1)に近いほど全面、縦が長い画面では高さ92%まで引き伸ばし、残りは下端の溶け込みで次の帯へつなぐ。
+     こうして文字の位置と製品の位置が、画面比によらず大きくずれないようにする */
+  .nt .mf__bg picture {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: max(50vw, 92%);
+  }
+
+  .nt .mf__bg picture::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, var(--c-navy) 0%, rgba(13, 20, 82, 0) 12%),
+      linear-gradient(0deg, var(--c-deep) 0%, rgba(7, 11, 46, 0.7) 6%, rgba(7, 11, 46, 0) 16%);
+  }
+
+  .nt .mf__img {
+    object-position: 0 0;
+  }
+
+  /* 狭いPCでも右の文字が読めるよう、右側にだけ薄く暗幕を重ねる */
+  .nt .mf__shade {
+    background: linear-gradient(90deg, rgba(7, 11, 46, 0) 34%, rgba(7, 11, 46, 0.36) 60%, rgba(7, 11, 46, 0.2) 100%);
+  }
+
+  .nt .mf__eyebrow {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--header-h) + clamp(10px, 1.4vw, 26px));
+    font-size: clamp(10px, 0.74vw, 14px);
+  }
+
+  .nt .mf__rule {
+    width: 7.9vw;
+  }
+
+  .nt .mf__tag {
+    position: absolute;
+    left: 2.7%;
+    top: 47%;
+    translate: 0 -50%;
+    font-size: clamp(14px, 1.46vw, 28px);
+    letter-spacing: 0.52em;
+  }
+
+  .nt .mf__tag-line {
+    width: 9vw;
+    margin-left: 0.2em;
+  }
+
+  .nt .mf__text {
+    position: absolute;
+    left: 56.8%;
+    top: 15.4%;
+    width: 40%;
+  }
+
+  .nt .mf__title {
+    font-size: clamp(34px, 4.6vw, 88px);
+    line-height: 1.35;
+    letter-spacing: 0.15em;
+    text-shadow: 0 0 40px rgba(7, 11, 46, 0.45);
+  }
+
+  .nt .mf__glow {
+    width: 24vw;
+    margin: 1.6vw 0 0 12.8vw;
+    transform: rotate(-3.9deg);
+  }
+
+  .nt .mf__body {
+    margin-top: 2.1vw;
+    font-size: clamp(11px, 0.92vw, 17px);
+    line-height: 2.78;
+    letter-spacing: 0.15em;
+    text-shadow: 0 0 14px rgba(7, 11, 46, 0.6);
+  }
+
+  .nt .mf__cue {
+    position: absolute;
+    left: 50%;
+    bottom: 1.8%;
+    translate: -50% 0;
+  }
+
+  .nt .mf__cue-row {
+    font-size: clamp(9px, 0.68vw, 13px);
+  }
+}
+
+/* 4:3 前後の横画面（iPad など）：製品と文字が近づくので暗幕を濃くする */
+@media (min-width: 768px) and (min-aspect-ratio: 6/5) and (max-aspect-ratio: 3/2) {
+  .nt .mf__shade {
+    background: linear-gradient(90deg, rgba(7, 11, 46, 0) 30%, rgba(7, 11, 46, 0.62) 52%, rgba(7, 11, 46, 0.36) 100%);
   }
 }
 
@@ -550,12 +717,6 @@
 @media (min-width: 768px) and (min-aspect-ratio: 6/5) and (prefers-reduced-motion: no-preference) {
   .nt.nt .xp {
     height: 370vh;
-  }
-
-  /* HEROの最後はネイビー一色。その余白ぶんだけ次の場面を引き上げて、間延びさせない */
-  .nt.nt .mf {
-    margin-top: -24vh;
-    padding-top: 11vh;
   }
 
   .nt.nt .xp__sticky {

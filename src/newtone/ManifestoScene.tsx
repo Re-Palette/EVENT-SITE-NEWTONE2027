@@ -1,110 +1,130 @@
 import React, { useRef } from 'react';
-import { BrushUnderline, SplitChars } from './parts';
-import { eachFromTo, gsap, scrubTl, useSceneMotion } from './motion';
+import { SplitChars } from './parts';
+import { eachFromTo, gsap, isLite, scrollToEl, scrubTl, useSceneMotion } from './motion';
 
-const waveA = '/newtone/wave-a.webp';
-/** コンセプトのアーチ写真（生成画像・仮。差し替えはこのファイル） */
-const face = '/newtone/portrait.webp';
-
-const PILLARS = [
-  { en: 'DISCOVER', ja: '新しい美容と、出会う。' },
-  { en: 'CONNECT', ja: 'つくり手と、つながる。' },
-  { en: 'INSPIRE', ja: '明日の自分が、ときめく。' },
-] as const;
+/** キービジュアル（文字なし）。PC は横長、スマホ・縦長は製品まわりを切り出した版 */
+const bgPc = '/newtone/concept-bg.webp';
+const bgSp = '/newtone/concept-sp.webp';
 
 /**
- * SCENE 02 — MANIFESTO
- * HEROのネイビーをそのまま受け取り、キービジュアルの横顔とコンセプトを雑誌の見開きのように組む。
- * コピーはスクロールに合わせて1文字ずつ灯る（opacity のみ）。
+ * SCENE 02 — CONCEPT
+ * コスメのキービジュアルを全面に敷き、コピーを重ねる。
+ * すべてスクロールに同期（scrub）。動かすのは transform / opacity のみ。
  */
 export const ManifestoScene: React.FC = () => {
   const ref = useRef<HTMLElement>(null);
 
   useSceneMotion(ref, ({ desktop, scope }) => {
-    // 横顔のフレーム：下からせり上がり、中の写真はゆっくり逆方向へ流れる
-    gsap
-      .timeline({
-        defaults: { ease: 'none' },
-        scrollTrigger: { trigger: '.mf__visual', start: 'top 95%', end: 'bottom 10%', scrub: true },
-      })
-      .fromTo('.mf__frame', { y: desktop ? 110 : 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out' }, 0)
-      .fromTo('.mf__img', { yPercent: -5 }, { yPercent: 5, duration: 1 }, 0)
-      .fromTo('.mf__script', { xPercent: -16, opacity: 0 }, { xPercent: 0, opacity: 1, duration: 0.22, ease: 'power2.out' }, 0.22)
-      .fromTo('.mf__vert', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.2 }, 0.26)
-      .fromTo('.mf__wave', { xPercent: 10, yPercent: 8 }, { xPercent: -8, yPercent: -10, duration: 1 }, 0);
+    // 背景：ゆっくり寄りから引いていく（軽量端末では動かさない）
+    if (!isLite()) {
+      gsap.fromTo(
+        '.mf__img',
+        { scale: 1.08, yPercent: 3 },
+        {
+          scale: 1,
+          yPercent: 0,
+          ease: 'none',
+          scrollTrigger: { trigger: scope, start: 'top bottom', end: desktop ? 'top top' : 'bottom 60%', scrub: true },
+        },
+      );
+    }
 
     if (!desktop) {
-      // スマホ：要素ごとに、画面へ入るあいだ（下92%→中ほど55%）で完成する。上へ戻せば逆再生
+      // スマホ：要素ごとに、画面へ入るあいだで完成する。上へ戻せば逆再生
+      const tag = scrubTl('.mf__bg', { start: 'top 60%', end: 'bottom 70%' });
+      tag.fromTo('.mf__tag', { opacity: 0, xPercent: -8 }, { opacity: 1, xPercent: 0, duration: 0.5 }, 0);
+      tag.fromTo('.mf__tag-line', { scaleX: 0 }, { scaleX: 1, duration: 0.5 }, 0.2);
+
+      const eb = scrubTl('.mf__eyebrow', { start: 'top 94%', end: 'top 70%' });
+      eb.fromTo('.mf__rule--l, .mf__rule--r', { scaleX: 0 }, { scaleX: 1, duration: 0.7 }, 0);
+      eb.fromTo('.mf__eyebrow-text', { opacity: 0 }, { opacity: 1, duration: 0.5 }, 0);
+
       const title = scrubTl('.mf__title', { start: 'top 90%', end: 'top 45%' });
-      title.fromTo('.mf .eyebrow', { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.2 }, 0);
       eachFromTo(title, '.mf__title .char', { opacity: 0.12, yPercent: 60 }, { opacity: 1, yPercent: 0, duration: 0.2, ease: 'power2.out' }, 0.05, 0.04);
-      eachFromTo(title, '.mf__title .brush-path', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.25 }, 0.6, 0.08);
+      title.fromTo('.mf__glow', { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.3 }, 0.6);
+
       gsap.utils.toArray<HTMLElement>('.mf__body p', scope).forEach((p) => {
-        scrubTl(p).fromTo(p, { opacity: 0.14, y: 18 }, { opacity: 1, y: 0 }, 0);
+        scrubTl(p, { end: 'top 68%' }).fromTo(p, { opacity: 0.14, y: 18 }, { opacity: 1, y: 0 }, 0);
       });
-      eachFromTo(scrubTl('.mf__pillars', { start: 'top 94%', end: 'top 60%' }), '.mf__pillar', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.4 }, 0, 0.3);
+      scrubTl('.mf__cue', { start: 'top 100%', end: 'top 92%' }).fromTo('.mf__cue', { opacity: 0 }, { opacity: 1 }, 0);
       return;
     }
 
-    // コピー：読む速さで文字が灯っていく
+    // PC：読む速さで要素が順に灯っていく
     gsap
       .timeline({
         defaults: { ease: 'none' },
-        scrollTrigger: { trigger: '.mf__text', start: 'top 88%', end: 'bottom 80%', scrub: true },
+        scrollTrigger: { trigger: scope, start: 'top 72%', end: 'top 8%', scrub: true },
       })
-      .fromTo('.mf .eyebrow', { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.1 }, 0)
-      .fromTo('.mf__title .char', { opacity: 0.12 }, { opacity: 1, duration: 0.08, stagger: 0.028 }, 0.04)
-      .fromTo('.mf__title .brush-path', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.12, stagger: 0.04 }, '>-0.04')
-      .fromTo('.mf__body p', { opacity: 0.14, y: 14 }, { opacity: 1, y: 0, duration: 0.16, stagger: 0.11 }, '>-0.08')
-      .fromTo('.mf__pillar', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.14, stagger: 0.06 }, '>-0.06');
+      .fromTo('.mf__rule--l, .mf__rule--r', { scaleX: 0 }, { scaleX: 1, duration: 0.14 }, 0)
+      .fromTo('.mf__eyebrow-text', { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0.03)
+      .fromTo('.mf__tag', { opacity: 0, xPercent: -10 }, { opacity: 1, xPercent: 0, duration: 0.16, ease: 'power2.out' }, 0.1)
+      .fromTo('.mf__tag-line', { scaleX: 0 }, { scaleX: 1, duration: 0.16 }, 0.18)
+      .fromTo('.mf__title .char', { opacity: 0.12 }, { opacity: 1, duration: 0.08, stagger: 0.026 }, 0.12)
+      .fromTo('.mf__glow', { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.14 }, '>-0.04')
+      .fromTo('.mf__body p', { opacity: 0.14, y: 14 }, { opacity: 1, y: 0, duration: 0.16, stagger: 0.09 }, '>-0.08')
+      .fromTo('.mf__cue', { opacity: 0 }, { opacity: 1, duration: 0.12 }, '>-0.06');
   });
+
+  const goNext = () => {
+    const next = ref.current?.nextElementSibling;
+    if (next instanceof HTMLElement) scrollToEl(next);
+  };
 
   return (
     <section id="about" ref={ref} className="mf" aria-labelledby="mf-title">
       <div className="mf__bg" aria-hidden="true">
-        <div className="wave mf__wave" style={{ backgroundImage: `url(${waveA})` }} />
+        <picture>
+          <source media="(min-width: 768px) and (min-aspect-ratio: 6/5)" srcSet={bgPc} />
+          <img className="mf__img" src={bgSp} alt="" width={1000} height={887} loading="lazy" decoding="async" draggable={false} />
+        </picture>
+        <span className="mf__shade" />
       </div>
-      <div className="mf__grid">
-        <div className="mf__visual" aria-hidden="true">
-          <div className="mf__frame">
-            <img className="mf__img" src={face} alt="" width={1100} height={1366} loading="lazy" decoding="async" draggable={false} />
-          </div>
-          <p className="mf__script">The Next Beauty.</p>
-          <p className="mf__vert">NEWTONE 2027 — BEAUTY BRAND POPUP</p>
-        </div>
 
-        <div className="mf__text">
-          <p className="eyebrow">01 — Concept</p>
-          <h2 id="mf-title" className="mf__title">
-            <SplitChars className="line" text="美しさは、" />
-            <SplitChars className="line" text="わたしたちが" />
-            <span className="line">
-              <SplitChars text="つくる" />
-              <span className="mf__future">
-                <SplitChars text="未来。" />
-                <BrushUnderline id="brush-manifesto" />
-              </span>
+      <p className="mf__eyebrow">
+        <i className="mf__rule mf__rule--l" aria-hidden="true" />
+        <span className="mf__eyebrow-text">01 — CONCEPT</span>
+        <i className="mf__rule mf__rule--r" aria-hidden="true" />
+      </p>
+
+      <p className="mf__tag" aria-hidden="true">
+        <span>THE NEXT BEAUTY.</span>
+        <i className="mf__tag-line" />
+      </p>
+
+      <div className="mf__text">
+        <h2 id="mf-title" className="mf__title">
+          <SplitChars className="line" text="美しさは、" />
+          <SplitChars className="line" text="わたしたちが" />
+          <span className="line">
+            <SplitChars text="つくる" />
+            <span className="mf__future">
+              <SplitChars text="未来。" />
             </span>
-          </h2>
-          <div className="mf__body">
-            <p>美容は、外見を変えるためだけのものじゃない。</p>
-            <p>自分らしさを見つけて、新しい価値観をかたちにする、ひとつの表現。</p>
-            <p>
-              学生起業家や若きクリエイターが生み出したブランドに、
-              <br className="pc-br" />
-              直接出会えるPOPUP。それが、NEWTONE です。
-            </p>
-          </div>
-          <ul className="mf__pillars">
-            {PILLARS.map((p) => (
-              <li key={p.en} className="mf__pillar">
-                <span className="mf__pillar-en">{p.en}</span>
-                <span className="mf__pillar-ja">{p.ja}</span>
-              </li>
-            ))}
-          </ul>
+          </span>
+        </h2>
+        <i className="mf__glow" aria-hidden="true" />
+        <div className="mf__body">
+          <p>美容は、外見を変えるためだけのものじゃない。</p>
+          <p>自分らしさを見つけて、新しい価値観をかたちにする、ひとつの表現。</p>
+          <p>
+            学生起業家や若きクリエイターが生み出したブランドに、
+            <br className="pc-br" />
+            直接出会えるPOPUP。それが、NEWTONE です。
+          </p>
         </div>
       </div>
+
+      <button type="button" className="mf__cue" onClick={goNext} aria-label="次のセクションへ進む">
+        <span className="mf__cue-row">
+          <i className="mf__cue-line" aria-hidden="true" />
+          <span className="mf__cue-text">DISCOVER</span>
+          <i className="mf__cue-line" aria-hidden="true" />
+        </span>
+        <svg className="mf__chev" viewBox="0 0 16 9" fill="none" aria-hidden="true">
+          <path d="M1 1l7 6.5L15 1" stroke="currentColor" strokeWidth="1.2" />
+        </svg>
+      </button>
     </section>
   );
 };

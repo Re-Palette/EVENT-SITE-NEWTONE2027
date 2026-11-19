@@ -677,11 +677,3 @@
     height: 52px;
   }
 }
-
-/* トップでは HERO の余白ぶん MANIFESTO を引き上げているが、下層ページの見出しの後では重ならないよう戻す */
-@media (min-width: 768px) and (min-aspect-ratio: 6/5) and (prefers-reduced-motion: no-preference) {
-  .nt.nt .pg-hero + .mf {
-    margin-top: 0;
-    padding-top: var(--sec-y);
-  }
-}
