@@ -13,6 +13,20 @@ ScrollTrigger.config({ ignoreMobileResize: true });
 export const MQ_DESKTOP = '(min-width: 768px) and (min-aspect-ratio: 6/5)';
 export const MQ_REDUCE = '(prefers-reduced-motion: reduce)';
 
+/**
+ * 全シーンがピン留めするので、後ろのシーンの開始位置は前のシーンのピン分の余白を含めて計算される必要がある。
+ * シーンの再構築（ブレークポイントを跨いだとき等）で作成順が崩れても、上から順に並べ直してから再計算する。
+ */
+let refreshQueued = 0;
+function queueRefresh() {
+  if (refreshQueued) return;
+  refreshQueued = requestAnimationFrame(() => {
+    refreshQueued = 0;
+    ScrollTrigger.sort();
+    ScrollTrigger.refresh();
+  });
+}
+
 type Setup = (ctx: { desktop: boolean; scope: HTMLElement }) => void | (() => void);
 
 /**
@@ -26,19 +40,36 @@ export function useSceneMotion(scope: RefObject<HTMLElement | null>, setup: Setu
     () => {
       const el = scope.current;
       if (!el) return;
-      const mm = gsap.matchMedia(el);
-      // gsap.matchMedia は「条件のどれか1つでも真」のときだけ関数を呼ぶ。
-      // スマホ（desktop も reduce も偽）でも必ず呼ばれるよう、常に真の条件 all を加える
-      mm.add({ all: 'all', desktop: MQ_DESKTOP, reduce: MQ_REDUCE }, (c) => {
-        const { desktop, reduce } = c.conditions as { desktop: boolean; reduce: boolean };
-        if (reduce) return;
-        return setup({ desktop, scope: el });
-      });
-      return () => mm.revert();
+      let mm: gsap.MatchMedia | undefined;
+      const build = () => {
+        mm?.revert();
+        mm = gsap.matchMedia(el);
+        // gsap.matchMedia は「条件のどれか1つでも真」のときだけ関数を呼ぶ。
+        // スマホ（desktop も reduce も偽）でも必ず呼ばれるよう、常に真の条件 all を加える
+        mm.add({ all: 'all', desktop: MQ_DESKTOP, reduce: MQ_REDUCE }, (c) => {
+          const { desktop, reduce } = c.conditions as { desktop: boolean; reduce: boolean };
+          if (reduce) return;
+          const cleanup = setup({ desktop, scope: el });
+          queueRefresh();
+          return cleanup;
+        });
+      };
+      build();
+      // フォント・画像が出そろうと場面の高さが変わり、「1画面に収まるか」の判定が変わりうる。
+      // ピン中の要素は寸法が固定されて測れないので、いったん元に戻して測り直す（読み込み直後に1回だけ）
+      const onSettled = () => build();
+      window.addEventListener(SETTLED, onSettled);
+      return () => {
+        window.removeEventListener(SETTLED, onSettled);
+        mm?.revert();
+      };
     },
     { scope },
   );
 }
+
+/** フォント・画像が出そろって高さが確定したときに送るイベント */
+const SETTLED = 'nt-layout-settled';
 
 export { gsap, ScrollTrigger };
 
@@ -61,10 +92,26 @@ export function scrollToTop(smooth = false) {
   window.scrollTo(0, 0);
 }
 
+/**
+ * アンカー・ボタンで飛ぶときの着地位置。
+ * 上端でピンする場面は、先頭（登場前で何も見えない）ではなく「静止区間（全部見えている状態）」に着地する。
+ * それ以外（長い場面・ピンなし）は要素の先頭。ピン留めの余白（pin-spacer）は文書上の位置に含まれている。
+ */
+export function anchorY(target: HTMLElement) {
+  const el = target.classList.contains('pin-spacer') && target.firstElementChild instanceof HTMLElement ? target.firstElementChild : target;
+  const st = ScrollTrigger.getAll().find(
+    (t) => t.pin && typeof t.vars.start === 'string' && t.vars.start.startsWith('top top') && (t.pin === el || t.pin.contains(el) || el.contains(t.pin)),
+  );
+  // 静止区間は後ろ40%。その中ほど（登場の後ろ75%）に着地する
+  if (st && !isNaN(st.start) && !isNaN(st.end)) return Math.round(st.start + (st.end - st.start) * 0.75);
+  const holder = el.parentElement?.classList.contains('pin-spacer') ? el.parentElement : el;
+  return Math.round(holder.getBoundingClientRect().top + window.scrollY);
+}
+
 /** 要素の先頭へスクロール。慣性スクロールがあればそれで、なければ通常のスムーズスクロール */
 export function scrollToEl(el: HTMLElement) {
   if (activeLenis) {
-    activeLenis.scrollTo(el, { duration: 1.4 });
+    activeLenis.scrollTo(anchorY(el), { duration: 1.4 });
     return;
   }
   el.scrollIntoView({ behavior: 'auto', block: 'start' });
@@ -78,15 +125,27 @@ export function useScrollSync() {
   useEffect(() => {
     if (isLiteDevice()) document.documentElement.dataset.perf = 'lite';
     if (window.matchMedia(MQ_REDUCE).matches) return;
-    const lenis = new Lenis({ autoRaf: false, lerp: 0.1, anchors: { duration: 1.6 } });
+    const lenis = new Lenis({ autoRaf: false, lerp: 0.1 });
     activeLenis = lenis;
     const off = lenis.on('scroll', ScrollTrigger.update);
+    // ページ内リンク（#about など）：ピンの余白を含めた位置へ、静止区間に着地するよう自分で動かす
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = (e.target as Element | null)?.closest<HTMLAnchorElement>('a[href^="#"]');
+      if (!a || a.hash.length < 2 || a.hash === '#main') return;
+      const target = document.getElementById(decodeURIComponent(a.hash.slice(1)));
+      if (!target) return;
+      e.preventDefault();
+      lenis.scrollTo(anchorY(target), { duration: 1.6 });
+    };
+    document.addEventListener('click', onClick);
     const tick = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
     ScrollTrigger.refresh();
     return () => {
       off();
+      document.removeEventListener('click', onClick);
       gsap.ticker.remove(tick);
       lenis.destroy();
       if (activeLenis === lenis) activeLenis = null;
@@ -94,7 +153,13 @@ export function useScrollSync() {
   }, []);
 
   useEffect(() => {
-    const refresh = () => ScrollTrigger.refresh();
+    let settledAt = 0;
+    const refresh = () => {
+      const now = performance.now();
+      if (now - settledAt > 300) window.dispatchEvent(new Event(SETTLED));
+      settledAt = now;
+      ScrollTrigger.refresh();
+    };
     document.fonts?.ready.then(refresh);
     window.addEventListener('load', refresh);
     const onShow = (e: PageTransitionEvent) => e.persisted && refresh();
@@ -117,8 +182,106 @@ export const SCRUB = 0.6;
 export function scrubTl(trigger: gsap.DOMTarget, st: Omit<ScrollTrigger.Vars, 'trigger'> = {}) {
   return gsap.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger, start: 'top 92%', end: 'top 55%', scrub: SCRUB, invalidateOnRefresh: true, ...st },
+    scrollTrigger: { trigger, start: 'top 96%', end: 'top 72%', scrub: SCRUB, invalidateOnRefresh: true, ...st },
   });
+}
+
+/* =========================================================
+   ピン留め（各場面で「一瞬止まって、全部見える」）
+   - 1画面に収まる場面：'top top' でピン → 前半60%で登場アニメ → 後半40%はすべてが見えた状態で静止（HOLD）
+   - 1画面より長い場面：要素は画面に入るあいだに完成させ（'top 75%' まで）、'bottom bottom' でピン → 少し静止
+   ========================================================= */
+
+/** 登場アニメが占める割合（残りが HOLD） */
+export const PIN_ANIM = 0.6;
+/** 上端ピンの長さ（画面の高さに対する倍率） */
+const pinDist = (desktop: boolean) => (desktop ? 1.4 : 1.0);
+/** 下端ピン（HOLD のみ）の長さ */
+const holdDist = (desktop: boolean) => (desktop ? 0.5 : 0.45);
+
+/** 場面が1画面に収まるか（わずかな誤差は許す）。refresh 時ではなく setup 時の画面サイズで判定する */
+export const fitsViewport = (el: HTMLElement, slack = 1.02) => Math.max(el.offsetHeight, el.scrollHeight) <= window.innerHeight * slack;
+
+const pinBase = {
+  pin: true,
+  pinSpacing: true,
+  anticipatePin: 1,
+  invalidateOnRefresh: true,
+} as const;
+
+/** 上端でピンして、そのあいだ scrub で進むタイムライン。作り終えたら holdEnd() で後半に静止区間を足す */
+export function pinTl(trigger: gsap.DOMTarget, desktop: boolean) {
+  return gsap.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: {
+      trigger,
+      start: 'top top',
+      end: () => `+=${Math.round(window.innerHeight * pinDist(desktop))}`,
+      scrub: SCRUB,
+      ...pinBase,
+    },
+  });
+}
+
+/** タイムラインの末尾に空の区間を足し、登場アニメが全体の PIN_ANIM になるようにする（＝残りは完成形で静止） */
+export function holdEnd(tl: gsap.core.Timeline, anim = PIN_ANIM) {
+  const d = tl.duration();
+  tl.to({}, { duration: (d * (1 - anim)) / anim }, d);
+  return tl;
+}
+
+/** 長い場面の下端ピン：下端が画面の下端に着いたところで少し止める */
+export function pinBottom(trigger: HTMLElement, desktop: boolean) {
+  return ScrollTrigger.create({
+    trigger,
+    start: 'bottom bottom',
+    end: () => `+=${Math.round(window.innerHeight * holdDist(desktop))}`,
+    ...pinBase,
+  });
+}
+
+/**
+ * 場面の登場アニメの入れ物。
+ * - 1画面に収まる（fit）→ 上端ピンのタイムライン。tl に登場を組み、finish() で後半に静止区間を足す。
+ *   rv() で渡した「要素ごとの登場」は、ピンのタイムラインのなかに順に並べられる（スマホ用）。
+ * - 収まらない → tl は通常の scrub タイムライン（reveal の範囲で完成）。rv() は要素ごとの scrub。
+ *   finish() で下端ピン（'bottom bottom'）を作る。
+ * 使い方：const s = scene(scope, desktop, {start, end}); s.tl.fromTo(...) / s.rv(el, {...}).fromTo(...); s.finish();
+ */
+export interface SceneHandle {
+  fit: boolean;
+  tl: gsap.core.Timeline;
+  rv: (trigger: gsap.DOMTarget, st?: Omit<ScrollTrigger.Vars, 'trigger'>) => gsap.core.Timeline;
+  finish: () => void;
+}
+
+export function scene(scope: HTMLElement, desktop: boolean, reveal: Omit<ScrollTrigger.Vars, 'trigger'> = {}): SceneHandle {
+  const fit = fitsViewport(scope);
+  let main: gsap.core.Timeline | undefined;
+  let cursor = 0;
+  const api: SceneHandle = {
+    fit,
+    get tl() {
+      return (main ??= fit
+        ? pinTl(scope, desktop)
+        : gsap.timeline({
+            defaults: { ease: 'none' },
+            scrollTrigger: { trigger: scope, start: 'top 80%', end: 'top 25%', scrub: SCRUB, invalidateOnRefresh: true, ...reveal },
+          }));
+    },
+    rv(trigger, st = {}) {
+      if (!fit) return scrubTl(trigger, st);
+      const t = gsap.timeline({ defaults: { ease: 'none' } });
+      api.tl.add(t, cursor);
+      cursor += 0.18;
+      return t;
+    },
+    finish() {
+      if (fit) holdEnd(api.tl);
+      else pinBottom(scope, desktop);
+    },
+  };
+  return api;
 }
 
 /**
@@ -141,11 +304,18 @@ export function eachFromTo(
 export const isLite = () => document.documentElement.dataset.perf === 'lite' || isLiteDevice();
 
 /** 場面を通過するあいだ、背景・画像をわずかにずらす（スクロール連動。軽量端末では何もしない） */
-export function parallax(targets: gsap.DOMTarget, trigger: gsap.DOMTarget, from: gsap.TweenVars, to: gsap.TweenVars) {
+export function parallax(
+  targets: gsap.DOMTarget,
+  trigger: gsap.DOMTarget,
+  from: gsap.TweenVars,
+  to: gsap.TweenVars,
+  /** 下端ピンの場面では 'bottom bottom'（ピンで止まる前に動きを終える） */
+  end = 'bottom top',
+) {
   if (isLite()) return;
   return gsap.fromTo(targets, from, {
     ease: 'none',
     ...to,
-    scrollTrigger: { trigger, start: 'top bottom', end: 'bottom top', scrub: true },
+    scrollTrigger: { trigger, start: 'top bottom', end, scrub: true },
   });
 }

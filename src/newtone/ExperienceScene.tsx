@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Phrases } from './parts';
-import { eachFromTo, gsap, parallax, scrubTl, useSceneMotion } from './motion';
+import { eachFromTo, gsap, parallax, SCRUB, scene, useSceneMotion } from './motion';
 
 const waveA = '/newtone/wave-a.webp';
 const waveB = '/newtone/wave-b.webp';
@@ -67,17 +67,21 @@ export const ExperienceScene: React.FC = () => {
       if (!track) return;
       // 幅の計測は refresh 時のみ（スクロール中はレイアウトを読まない）
       const distance = () => -(track.scrollWidth - window.innerWidth);
+      // CSS の sticky（.xp の高さ 430vh）でピン留め。最初に少し止まり、横へ流れ、最後の1枚が全部見えた状態で静止する
+      const HOLD0 = 0.08;
+      const HOLD1 = 0.4;
       gsap
         .timeline({
           defaults: { ease: 'none' },
-          scrollTrigger: { trigger: scope, start: 'top top', end: 'bottom bottom', scrub: true, invalidateOnRefresh: true },
+          scrollTrigger: { trigger: scope, start: 'top top', end: 'bottom bottom', scrub: SCRUB, invalidateOnRefresh: true },
         })
-        .to(track, { x: distance, duration: 1 }, 0)
-        .fromTo('.xp__art-in', { xPercent: -7 }, { xPercent: 7, duration: 1 }, 0)
-        .fromTo('.xp__progress i', { scaleX: 0 }, { scaleX: 1, duration: 1 }, 0)
-        .to('.xp__hint', { opacity: 0, duration: 0.08 }, 0.02);
+        .to(track, { x: distance, duration: 1 }, HOLD0)
+        .fromTo('.xp__art-in', { xPercent: -7 }, { xPercent: 7, duration: 1 }, HOLD0)
+        .fromTo('.xp__progress i', { scaleX: 0 }, { scaleX: 1, duration: 1 }, HOLD0)
+        .to('.xp__hint', { opacity: 0, duration: 0.08 }, HOLD0 + 0.02)
+        .to({}, { duration: HOLD1 }, HOLD0 + 1);
 
-      // ピン留めされる直前に、見出しとカードが立ち上がる
+      // ピン留めされる直前に、見出しとカードが立ち上がる（ピン開始までに完成）
       gsap
         .timeline({
           defaults: { ease: 'none' },
@@ -87,13 +91,16 @@ export const ExperienceScene: React.FC = () => {
         .fromTo('.xp__card', { opacity: 0, y: 90 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.12 }, 0.2);
       return;
     }
-    // スマホ：ピン留めせず、カードは指で横にめくれるまま。縦スクロールに同期して見出し・カード・絵が動く
-    eachFromTo(scrubTl('.xp__intro', { end: 'top 50%' }), '.xp__intro > *', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 }, 0, 0.15);
+    // スマホ：カードは指で横にめくれるまま（横スワイプと競合するので上端ピンは使わず、収まらなければ下端ピン）。
+    // 縦スクロールに同期して見出し・カード・絵が動き、完成してから下端で止まる
+    const s = scene(scope, false);
+    eachFromTo(s.rv('.xp__intro', { end: 'top 55%' }), '.xp__intro > *', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 }, 0, 0.15);
     // カードは右から滑り込み（PC の横流れの代わり）、絵は幕が開くように現れ、中の画像は横へゆっくり流れる
-    const cards = scrubTl('.xp__cards', { start: 'top 94%', end: 'top 52%' });
+    const cards = s.rv('.xp__cards', { start: 'top 96%', end: 'top 68%' });
     eachFromTo(cards, '.xp__card', { opacity: 0, x: 60, scale: 0.94 }, { opacity: 1, x: 0, scale: 1, duration: 0.6 }, 0, 0.1);
     eachFromTo(cards, '.xp__art', { clipPath: 'inset(0% 0% 100% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.7, ease: 'power2.inOut' }, 0.1, 0.1);
-    parallax('.xp__art-in', '.xp__cards', { xPercent: -6 }, { xPercent: 6 });
+    if (!s.fit) parallax('.xp__art-in', '.xp__cards', { xPercent: -6 }, { xPercent: 6 }, 'bottom bottom');
+    s.finish();
   });
 
   return (

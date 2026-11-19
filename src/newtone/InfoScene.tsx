@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { SITE } from './site';
-import { eachFromTo, gsap, scrubTl, useSceneMotion } from './motion';
+import { eachFromTo, scene, useSceneMotion } from './motion';
 
 const Pending: React.FC = () => (
   <>
@@ -27,21 +27,21 @@ export const InfoScene: React.FC<{ part?: 'all' | 'access' | 'news' }> = ({ part
     const has = (sel: string) => scope.querySelector(sel) !== null;
     // 下層ページでは最初から画面内にあるので、スクロール連動のフェードはかけない（完成形のまま）
     if (part !== 'all') return;
+    // 1画面に収まれば上端ピンの中で登場 → 静止。収まらなければ入ってくるあいだに完成させて下端でピン
+    const s = scene(scope, desktop, { start: 'top 80%', end: 'top 15%' });
     if (!desktop) {
-      if (has('.inf__head')) eachFromTo(scrubTl('.inf__head', { end: 'top 50%' }), '.inf__head > *', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 }, 0, 0.2);
+      if (has('.inf__head')) eachFromTo(s.rv('.inf__head', { end: 'top 55%' }), '.inf__head > *', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 }, 0, 0.2);
       if (has('.inf__card')) {
         // 招待状が少し傾いたまま下から入り、各行が順に滑り込む（PC と同じ・スクロール同期）
-        const card = scrubTl('.inf__grid', { start: 'top 94%', end: 'top 45%' });
+        const card = s.rv('.inf__grid', { start: 'top 96%', end: 'top 55%' });
         card.fromTo('.inf__card', { opacity: 0, y: 56, rotate: -2 }, { opacity: 1, y: 0, rotate: 0, duration: 0.6, ease: 'power2.out' }, 0);
         eachFromTo(card, '.inf__row', { opacity: 0, x: 22 }, { opacity: 1, x: 0, duration: 0.35 }, 0.3, 0.12);
       }
-      if (has('.inf__news')) scrubTl('.inf__news', { start: 'top 95%', end: 'top 60%' }).fromTo('.inf__news', { opacity: 0, y: 50 }, { opacity: 1, y: 0 }, 0);
+      if (has('.inf__news')) s.rv('.inf__news', { start: 'top 100%', end: 'bottom 100%' }).fromTo('.inf__news', { opacity: 0, y: 50 }, { opacity: 1, y: 0 }, 0);
+      s.finish();
       return;
     }
-    const tl = gsap.timeline({
-      defaults: { ease: 'none' },
-      scrollTrigger: { trigger: ref.current, start: 'top 80%', end: 'top 10%', scrub: true },
-    });
+    const tl = s.tl;
     if (has('.inf__head')) tl.fromTo('.inf__head > *', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.3, stagger: 0.08 }, 0);
     if (has('.inf__card'))
       tl.fromTo(
@@ -51,6 +51,7 @@ export const InfoScene: React.FC<{ part?: 'all' | 'access' | 'news' }> = ({ part
         0.15,
       ).fromTo('.inf__row', { opacity: 0, x: 30 }, { opacity: 1, x: 0, duration: 0.25, stagger: 0.08 }, 0.4);
     if (has('.inf__news')) tl.fromTo('.inf__news', { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.4 }, 0.4);
+    s.finish();
   });
 
   return (

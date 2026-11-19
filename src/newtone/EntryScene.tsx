@@ -6,7 +6,7 @@ import { CONTACT_HREF, SITE } from './site';
 import { SiteFooter } from './SiteFooter';
 import { SnsLinks } from './SnsLinks';
 import { ArrowRight, BrushUnderline, Particles, SplitChars } from './parts';
-import { eachFromTo, gsap, scrubTl, useSceneMotion } from './motion';
+import { eachFromTo, gsap, scene, useSceneMotion } from './motion';
 
 const contactHref = CONTACT_HREF;
 
@@ -18,33 +18,48 @@ export const EntryScene: React.FC<{ showSns?: boolean }> = ({ showSns = false })
   const ref = useRef<HTMLElement>(null);
 
   useSceneMotion(ref, ({ desktop, scope }) => {
-    // 背景の巨大ロゴと光は、場面を通り過ぎるあいだずっとゆっくり流れる
-    gsap
-      .timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: '.en__stage', start: 'top bottom', end: 'bottom top', scrub: true } })
-      .fromTo('.en__mega', { xPercent: 0 }, { xPercent: -30, duration: 1 }, 0)
-      .fromTo('.en .wave', { xPercent: 14, yPercent: 6 }, { xPercent: -6, yPercent: -6, duration: 1 }, 0)
-      .fromTo('.en__crowd', { yPercent: 22 }, { yPercent: 0, duration: 0.6 }, 0);
+    // ピン留めするのはフッターを除いたステージ。1画面に収まれば上端で登場 → 静止、収まらなければ下端でピン
+    const stage = scope.querySelector<HTMLElement>('.en__stage');
+    if (!stage) return;
+    const s = scene(stage, desktop, { start: 'top 75%', end: 'top 20%' });
+    const rest = ['.en__lead', '.en .cta--main', '.en__pending', '.en__sns'].filter((sel) => scope.querySelector(sel));
 
     if (!desktop) {
       // 大きなコピーが1文字ずつせり上がり、筆致のラインが引かれ、残りが続く（PC と同じ組み立て・スクロール同期）
-      const title = scrubTl('.en__title', { start: 'top 90%', end: 'top 50%' });
+      const title = s.rv('.en__title', { start: 'top 92%', end: 'top 55%' });
       title
         .fromTo('.en .eyebrow', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.15 }, 0)
         .fromTo('.en__script', { opacity: 0, xPercent: -12 }, { opacity: 1, xPercent: 0, duration: 0.25, ease: 'power2.out' }, 0.05);
       eachFromTo(title, '.en__title .char', { opacity: 0, yPercent: 80 }, { opacity: 1, yPercent: 0, duration: 0.3, ease: 'power2.out' }, 0.12, 0.04);
       eachFromTo(title, '.en .brush-path', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.25 }, 0.65, 0.06);
-      for (const sel of ['.en__lead', '.en .cta--main', '.en__pending', '.en__sns']) {
-        if (scope.querySelector(sel)) scrubTl(sel, { start: 'top 96%', end: 'top 70%' }).fromTo(sel, { opacity: 0, y: 30 }, { opacity: 1, y: 0 }, 0);
-      }
-      return;
+      for (const sel of rest) s.rv(sel, { start: 'top 100%', end: 'bottom 100%' }).fromTo(sel, { opacity: 0, y: 30 }, { opacity: 1, y: 0 }, 0);
+    } else {
+      s.tl
+        .fromTo('.en .eyebrow', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.15 }, 0)
+        .fromTo('.en__script', { opacity: 0, xPercent: -12 }, { opacity: 1, xPercent: 0, duration: 0.25, ease: 'power2.out' }, 0.05)
+        .fromTo('.en__title .char', { opacity: 0, yPercent: 70 }, { opacity: 1, yPercent: 0, duration: 0.3, stagger: 0.025, ease: 'power2.out' }, 0.12)
+        .fromTo('.en .brush-path', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.2, stagger: 0.05 }, '>-0.08')
+        .fromTo(rest, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.22, stagger: 0.07 }, '>-0.12');
     }
-    gsap
-      .timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: '.en__inner', start: 'top 82%', end: 'center 52%', scrub: true } })
-      .fromTo('.en .eyebrow', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.15 }, 0)
-      .fromTo('.en__script', { opacity: 0, xPercent: -12 }, { opacity: 1, xPercent: 0, duration: 0.25, ease: 'power2.out' }, 0.05)
-      .fromTo('.en__title .char', { opacity: 0, yPercent: 70 }, { opacity: 1, yPercent: 0, duration: 0.3, stagger: 0.025, ease: 'power2.out' }, 0.12)
-      .fromTo('.en .brush-path', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.2, stagger: 0.05 }, '>-0.08')
-      .fromTo(['.en__lead', '.en .cta--main', '.en__pending', '.en__sns'], { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.22, stagger: 0.07 }, '>-0.12');
+
+    // 背景の巨大ロゴと光は、場面を通り過ぎるあいだゆっくり流れる（ピンで止まる前に終える）
+    if (s.fit) {
+      const d = s.tl.duration();
+      s.tl
+        .fromTo('.en__mega', { xPercent: 0 }, { xPercent: -30, duration: d }, 0)
+        .fromTo('.en .wave', { xPercent: 14, yPercent: 6 }, { xPercent: -6, yPercent: -6, duration: d }, 0)
+        .fromTo('.en__crowd', { yPercent: 22 }, { yPercent: 0, duration: d * 0.6 }, 0);
+    } else {
+      gsap
+        .timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: { trigger: stage, start: 'top bottom', end: 'bottom bottom', scrub: true },
+        })
+        .fromTo('.en__mega', { xPercent: 0 }, { xPercent: -30, duration: 1 }, 0)
+        .fromTo('.en .wave', { xPercent: 14, yPercent: 6 }, { xPercent: -6, yPercent: -6, duration: 1 }, 0)
+        .fromTo('.en__crowd', { yPercent: 22 }, { yPercent: 0, duration: 0.6 }, 0);
+    }
+    s.finish();
   });
 
   return (

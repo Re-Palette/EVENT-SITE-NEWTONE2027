@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Route, Routes, useLocation, useNavigationType } from 'react-router-dom';
 import { SiteHeader } from './SiteHeader';
-import { ScrollTrigger, scrollToTop, useScrollSync } from './motion';
+import { ScrollTrigger, anchorY, scrollToTop, useScrollSync } from './motion';
 import { NAV_LINKS } from './site';
 import { AboutPage, AccessPage, BrandsPage, ContactPage, HomePage, NewsPage, NotFoundPage, ProgramPage } from './pages';
 import './newtone.css';
@@ -28,7 +28,10 @@ function useRouteChange() {
     }
     // 戻る・進む（POP）はブラウザが復元する位置のまま。リンクでの移動だけ先頭（または #id）へ
     if (navType !== 'POP') {
-      if (hash) document.getElementById(hash.slice(1))?.scrollIntoView();
+      if (hash) {
+        const t = document.getElementById(hash.slice(1));
+        if (t) window.scrollTo(0, anchorY(t));
+      }
       else scrollToTop();
     }
     const id = requestAnimationFrame(() => ScrollTrigger.refresh());
