@@ -26,6 +26,30 @@ function initials(m: TeamMember) {
   return Array.from(m.name.trim())[0] ?? '';
 }
 
+/**
+ * 所属。「／」で区切った単位（大学名・団体名など）の途中では改行せず、
+ * 1行に収まらないときは区切りの後ろで折り返す。
+ */
+const Affiliation: React.FC<{ text: string }> = ({ text }) => {
+  const parts = text
+    .split(/\s*[／/]\s*/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  return (
+    <p className="tm__aff">
+      {parts.map((p, i) => (
+        <React.Fragment key={i}>
+          <span className="tm__aff-part">
+            {p}
+            {i < parts.length - 1 && <span className="tm__aff-sep"> ／</span>}
+          </span>
+          {i < parts.length - 1 && ' '}
+        </React.Fragment>
+      ))}
+    </p>
+  );
+};
+
 const MemberCard: React.FC<{ member: TeamMember }> = ({ member: m }) => {
   const links = [
     m.sns?.instagram && { key: 'instagram', label: 'Instagram', url: m.sns.instagram, icon: <Instagram strokeWidth={1.5} aria-hidden="true" /> },
@@ -45,7 +69,7 @@ const MemberCard: React.FC<{ member: TeamMember }> = ({ member: m }) => {
       <p className="tm__role">{m.role}</p>
       <h3 className="tm__name">{m.name}</h3>
       {m.nameEn && <p className="tm__name-en">{m.nameEn}</p>}
-      {m.affiliation && <p className="tm__aff">{m.affiliation}</p>}
+      {m.affiliation && <Affiliation text={m.affiliation} />}
       {m.bio && <p className="tm__bio">{m.bio}</p>}
       {links.length > 0 && (
         <ul className="tm__sns">

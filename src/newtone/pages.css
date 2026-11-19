@@ -672,6 +672,16 @@
   color: rgba(247, 244, 255, 0.78);
 }
 
+/* 大学名・団体名などの単位ごとに折り返す（単位の途中では改行しない。長すぎる単位だけは中で折り返す） */
+.nt .tm__aff-part {
+  display: inline-block;
+  max-width: 100%;
+}
+
+.nt .tm__aff-sep {
+  color: rgba(247, 244, 255, 0.45);
+}
+
 .nt .tm__bio {
   margin: 10px 0 0;
   font-size: 13px;
