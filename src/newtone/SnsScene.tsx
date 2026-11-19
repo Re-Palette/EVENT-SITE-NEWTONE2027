@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { SplitChars } from './parts';
 import { SnsLinks } from './SnsLinks';
-import { eachFromTo, scene, useSceneMotion } from './motion';
+import { eachFromTo, gsap, scrubTl, useSceneMotion } from './motion';
 
 /**
  * SNS — 公式SNS（FOLLOW US）
@@ -10,22 +10,19 @@ import { eachFromTo, scene, useSceneMotion } from './motion';
 export const SnsScene: React.FC = () => {
   const ref = useRef<HTMLElement>(null);
 
-  useSceneMotion(ref, ({ desktop, scope }) => {
-    // 1画面に収まれば上端ピンの中で登場 → 静止。収まらなければ入ってくるあいだに完成させて下端でピン
-    const s = scene(scope, desktop, { start: 'top 82%', end: 'top 30%' });
+  useSceneMotion(ref, ({ desktop }) => {
     if (!desktop) {
-      const head = s.rv('.sns-sc__head', { start: 'top 92%', end: 'top 55%' });
+      const head = scrubTl('.sns-sc__head', { start: 'top 90%', end: 'top 45%' });
       // 英字は塗りがグラデーション（background-clip: text）なので、1文字ずつ transform をかけず、まとめて動かす（文字ごとだと描画されなくなる）
       head.fromTo('.sns-sc__en', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out' }, 0);
       eachFromTo(head, ['.sns-sc .eyebrow', '.sns-sc__ja', '.sns-sc__lead'], { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3 }, 0.2, 0.12);
-      eachFromTo(s.rv('.sns__list', { start: 'top 100%', end: 'bottom 100%' }), '.sns__item', { opacity: 0, y: 36, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.5 }, 0, 0.2);
-      s.finish();
+      eachFromTo(scrubTl('.sns__list', { start: 'top 95%', end: 'top 55%' }), '.sns__item', { opacity: 0, y: 36, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.5 }, 0, 0.2);
       return;
     }
-    s.tl
+    gsap
+      .timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: ref.current, start: 'top 82%', end: 'top 30%', scrub: true } })
       .fromTo('.sns-sc__head > *', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.3, stagger: 0.08 }, 0)
       .fromTo('.sns__item', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.35, stagger: 0.1 }, 0.25);
-    s.finish();
   });
 
   return (

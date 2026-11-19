@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { EXPERIENCE_CATEGORIES } from './site';
-import { eachFromTo, gsap, parallax, SCRUB, scene, useSceneMotion } from './motion';
+import { eachFromTo, gsap, parallax, scrubTl, useSceneMotion } from './motion';
 
 const N = EXPERIENCE_CATEGORIES.length;
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -16,18 +16,15 @@ export const CategoriesScene: React.FC = () => {
 
   useSceneMotion(ref, ({ desktop, scope }) => {
     if (!desktop) {
-      // 見出しが立ち上がり、一覧は1行ずつ、番号・名前・コピーがスクロールに合わせて灯る（上へ戻せば逆再生）。
-      // 1画面に収まればピンの中で順に、収まらなければ入ってくるあいだに完成させて下端でピン
-      const s = scene(scope, false);
-      eachFromTo(s.rv('.ct__head', { end: 'top 55%' }), '.ct__head > *', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 }, 0, 0.25);
+      // 見出しが立ち上がり、一覧は1行ずつ、番号・名前・コピーがスクロールに合わせて灯る（上へ戻せば逆再生）
+      eachFromTo(scrubTl('.ct__head', { end: 'top 50%' }), '.ct__head > *', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 }, 0, 0.25);
       gsap.utils.toArray<HTMLElement>('.ct__item', scope).forEach((item) => {
-        s.rv(item, { start: 'top 98%', end: 'top 74%' })
+        scrubTl(item, { start: 'top 92%', end: 'top 58%' })
           .fromTo(item.querySelector('.ct__idx'), { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.5 }, 0)
           .fromTo(item.querySelector('.ct__name'), { opacity: 0, x: -34 }, { opacity: 1, x: 0, duration: 0.8, ease: 'power2.out' }, 0.05)
           .fromTo(item.querySelector('.ct__copy'), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6 }, 0.3);
       });
-      if (!s.fit) parallax('.ct__bg', scope, { yPercent: -6 }, { yPercent: 6 }, 'bottom bottom');
-      s.finish();
+      parallax('.ct__bg', '.ct', { yPercent: -6 }, { yPercent: 6 });
       return;
     }
 
@@ -35,10 +32,10 @@ export const CategoriesScene: React.FC = () => {
     const hues = gsap.utils.toArray<HTMLElement>('.ct__hue', scope);
     const copies = gsap.utils.toArray<HTMLElement>('.ct__orb-copy', scope);
 
-    const HOLD = 0.6; // 最初と最後に少し留まる（最後は最後のカテゴリーが全部見えた状態で静止）
+    const HOLD = 0.6; // 最初と最後に少し留まる
     const tl = gsap.timeline({
       defaults: { ease: 'none' },
-      scrollTrigger: { trigger: scope, start: 'top top', end: 'bottom bottom', scrub: SCRUB, invalidateOnRefresh: true },
+      scrollTrigger: { trigger: scope, start: 'top top', end: 'bottom bottom', scrub: true },
     });
     tl.fromTo('.ct__orb', { yPercent: 5, rotate: -4 }, { yPercent: -5, rotate: 4, duration: N - 1 + HOLD * 2 }, 0);
 

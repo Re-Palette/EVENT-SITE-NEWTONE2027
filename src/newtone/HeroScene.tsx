@@ -6,7 +6,7 @@ const titleMask = '/newtone/hero-title-mask.webp';
 /** スマートフォン用のキービジュアル（縦長のポスター。ヘッダー部分だけ画像から除き、HTML のヘッダーを重ねる） */
 const heroSp = '/newtone/hero-sp.webp';
 const heroLights = '/newtone/hero-lights.webp';
-import { gsap, holdEnd, isLite, pinTl, SCRUB, useSceneMotion } from './motion';
+import { gsap, isLite, SCRUB, useSceneMotion } from './motion';
 
 /** PC（横長）版とスマホ（縦長）版の切り替え条件。CSS の .hero__desk / .hero__poster と同じ */
 const MQ_DESK = '(min-width: 768px) and (min-aspect-ratio: 6/5)';
@@ -58,16 +58,12 @@ export const HeroScene: React.FC = () => {
 
   useSceneMotion(ref, ({ desktop }) => {
     if (desktop) {
-      // CSS の sticky（.hero の高さ 250vh）でピン留め。最初に少し止まり（参考画像そのものが全部見える）、そのあと光が動き出す。
       // 進行度0 = 参考画像そのもの。スクロールに合わせて光が動き出す
-      const HOLD0 = 0.3;
       const tl = gsap.timeline({
         defaults: { ease: 'none' },
-        scrollTrigger: { trigger: ref.current, start: 'top top', end: 'bottom bottom', scrub: SCRUB, invalidateOnRefresh: true },
+        scrollTrigger: { trigger: ref.current, start: 'top top', end: 'bottom bottom', scrub: true },
       });
-      const run = gsap.timeline({ defaults: { ease: 'none' } });
-      run
-        .to('.hero__desk .hero__media', { scale: 1.06, yPercent: -2.5, duration: 1 }, 0)
+      tl.to('.hero__desk .hero__media', { scale: 1.06, yPercent: -2.5, duration: 1 }, 0)
         .fromTo('.hero__desk .hero__lights', { autoAlpha: 0, xPercent: -6, yPercent: 4 }, { autoAlpha: 0.75, xPercent: 5, yPercent: -6, duration: 0.7 }, 0)
         .fromTo('.hero__desk .hero__sheen-band', { xPercent: 0 }, { xPercent: -68.75, duration: 0.55 }, 0.04)
         .set('.hero__desk .hero__sheen', { autoAlpha: 0 }, 0.6)
@@ -76,7 +72,6 @@ export const HeroScene: React.FC = () => {
         .fromTo('.hero__desk .hero__veil', { autoAlpha: 1, yPercent: 0 }, { yPercent: -100, duration: 0.45 }, 0.55)
         // 完全に覆われたら下の層は描画しない
         .set('.hero__desk .hero__stage', { autoAlpha: 0 }, 0.999);
-      tl.add(run, HOLD0);
       return;
     }
     // スマートフォン：表示した瞬間にポスターがゆっくり寄りながら現れ、光の層が流れ込む（読み込み時の演出）
@@ -85,14 +80,17 @@ export const HeroScene: React.FC = () => {
       .from('.poster__img', { scale: 1.1, opacity: 0.25, duration: 1.8, ease: 'power2.out' }, 0)
       .from('.hero__poster .hero__lights', { xPercent: -10, duration: 2.4, ease: 'power2.out' }, 0.1);
 
-    // 1画面ぶんをピン留めし、そのあいだポスターはゆっくり寄り、光の層が流れる（scrub・上へ戻せば逆再生）。
-    // 前半で動き、後半はポスターが全部見えた状態で静止する（transform・opacity のみ）
+    // 画面外へ抜けるあいだ、スクロールに同期して動かす（上へ戻せば逆再生）。ピン留めはしない
+    // ポスターは寄りながら少し遅れて抜け、後半で夜の色へ溶けていく。光の層も流れる（transform・opacity のみ）
     const lite = isLite();
-    const tl = pinTl(ref.current!, false);
-    tl.fromTo('.poster__media', { scale: 1, yPercent: 0 }, { scale: 1.03, yPercent: lite ? 0 : 3, duration: 1 }, 0);
+    const tl = gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: { trigger: ref.current, start: 'top top', end: 'bottom top', scrub: SCRUB, invalidateOnRefresh: true },
+    });
+    tl.fromTo('.poster__media', { scale: 1, yPercent: 0 }, { scale: 1.08, yPercent: lite ? 0 : 8, duration: 1 }, 0)
+      .fromTo('.poster__media', { opacity: 1 }, { opacity: 0.2, duration: 0.5 }, 0.5);
     // 軽量端末では光の層を省く
     if (!lite) tl.fromTo('.hero__poster .hero__lights', { autoAlpha: 0, yPercent: 6 }, { autoAlpha: 0.6, yPercent: -8, duration: 1 }, 0);
-    holdEnd(tl);
   });
 
   return (

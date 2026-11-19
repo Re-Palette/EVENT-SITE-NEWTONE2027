@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { PARTNERS, PARTNER_GROUPS, type Partner } from './partners';
 import { ArrowRight, SplitChars } from './parts';
-import { eachFromTo, gsap, scene, useSceneMotion } from './motion';
+import { eachFromTo, gsap, scrubTl, useSceneMotion } from './motion';
 
 const PartnerTile: React.FC<{ partner: Partner }> = ({ partner }) => {
   const inner = partner.logo ? (
@@ -34,32 +34,29 @@ export const PartnersScene: React.FC<{ variant?: 'teaser' | 'full' }> = ({ varia
   const ref = useRef<HTMLElement>(null);
 
   useSceneMotion(ref, ({ desktop, scope }) => {
-    // 1画面に収まれば上端ピンの中で登場 → 静止。収まらなければ入ってくるあいだに完成させて下端でピン
-    const s = scene(scope, desktop, { start: 'top 82%', end: 'top 30%' });
     const hasCta = scope.querySelector('.pt__cta') !== null;
-    // 一覧ページは縦に長いので、デスクトップでもグループごとに順に現れる（先頭ピンの一括登場にしない）
+    // 一覧ページは縦に長いので、デスクトップでもグループごとに順に現れる
     if (!desktop || full) {
       if (!full) {
-        const head = s.rv('.pt__head', { start: 'top 92%', end: 'top 50%' });
+        const head = scrubTl('.pt__head', { start: 'top 90%', end: 'top 40%' });
         head.fromTo('.pt .eyebrow', { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.2 }, 0);
         eachFromTo(head, '.pt__en .char', { yPercent: 105, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.35, ease: 'power2.out' }, 0.05, 0.045);
         eachFromTo(head, ['.pt__ja', '.pt__lead'], { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3 }, 0.5, 0.12);
       }
       gsap.utils.toArray<HTMLElement>('.pt__group', scope).forEach((g) => {
-        const tl = s.rv(g, { start: 'top 96%', end: 'top 66%' });
+        const tl = scrubTl(g, { start: 'top 92%', end: 'top 52%' });
         tl.fromTo(g.querySelector('.pt__group-title'), { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.4 }, 0);
         eachFromTo(tl, g.querySelectorAll('.pt__tile'), { opacity: 0, y: 26, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.5 }, 0.15, 0.1);
       });
-      if (hasCta) s.rv('.pt__cta', { start: 'top 100%', end: 'bottom 100%' }).fromTo('.pt__cta', { opacity: 0, y: 30 }, { opacity: 1, y: 0 }, 0);
-      if (full) s.rv('.pt__recruit', { start: 'top 100%', end: 'top 70%' }).fromTo('.pt__recruit', { opacity: 0, y: 40 }, { opacity: 1, y: 0 }, 0);
-      s.finish();
+      if (hasCta) scrubTl('.pt__cta', { start: 'top 95%', end: 'top 65%' }).fromTo('.pt__cta', { opacity: 0, y: 30 }, { opacity: 1, y: 0 }, 0);
+      if (full) scrubTl('.pt__recruit', { start: 'top 95%', end: 'top 65%' }).fromTo('.pt__recruit', { opacity: 0, y: 40 }, { opacity: 1, y: 0 }, 0);
       return;
     }
-    s.tl
+    const tl = gsap
+      .timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: ref.current, start: 'top 82%', end: 'top 20%', scrub: true } })
       .fromTo('.pt__head > *', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.3, stagger: 0.08 }, 0)
       .fromTo('.pt__group', { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.35, stagger: 0.12 }, 0.2);
-    if (hasCta) s.tl.fromTo('.pt__cta', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.25 }, 0.6);
-    s.finish();
+    if (hasCta) tl.fromTo('.pt__cta', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.25 }, 0.6);
   });
 
   return (

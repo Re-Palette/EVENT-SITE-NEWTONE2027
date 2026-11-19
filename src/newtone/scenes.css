@@ -716,7 +716,7 @@
 /* ピン留めレイアウト：縦スクロールで横へ流れるギャラリー */
 @media (min-width: 768px) and (min-aspect-ratio: 6/5) and (prefers-reduced-motion: no-preference) {
   .nt.nt .xp {
-    height: 430vh;
+    height: 370vh;
   }
 
   .nt.nt .xp__sticky {
@@ -1921,24 +1921,4 @@ html[data-perf='lite'] .nt .br__sheen {
   font-weight: 500;
   font-size: clamp(14px, 1.1vw, 18px);
   letter-spacing: 0.24em;
-}
-
-/* =========================================================
-   ピン留めする短い場面：ピンの間、下に次の場面が覗かないよう 1 画面ぶんの高さにそろえて中央に置く
-   （GSAP のピンは JS 側。ここでは高さだけ。視差効果を減らす設定ではピンもしないので適用しない）
-   ========================================================= */
-@media (prefers-reduced-motion: no-preference) {
-  .nt .sns-sc,
-  .nt .inf:not(.inf--page) {
-    min-height: var(--vh);
-    display: grid;
-    align-content: center;
-  }
-}
-
-/* スマホ：HERO は 1 画面ぶんの高さにそろえる（ポスターが画面より低い端末でも、ピンの間に下が空かないように） */
-@media not all and (min-width: 768px) and (min-aspect-ratio: 6/5) {
-  .nt .hero {
-    min-height: var(--vh);
-  }
 }

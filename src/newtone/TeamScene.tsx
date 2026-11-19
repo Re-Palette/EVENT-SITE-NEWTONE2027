@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Instagram } from 'lucide-react';
 import { TEAM_GROUPS, TEAM_MEMBERS, type TeamMember } from './team';
 import { ArrowRight } from './parts';
-import { gsap, scene, useSceneMotion } from './motion';
+import { gsap, scrubTl, useSceneMotion } from './motion';
 
 /** X（旧Twitter）のロゴ。lucide にブランドアイコンがないので自前で持つ */
 const XIcon: React.FC = () => (
@@ -113,14 +113,12 @@ const PlaceholderCard: React.FC<{ first?: boolean }> = ({ first }) => (
 export const TeamScene: React.FC = () => {
   const ref = useRef<HTMLElement>(null);
 
-  useSceneMotion(ref, ({ desktop, scope }) => {
-    // 1画面に収まれば上端ピンの中で順に登場、収まらなければ入ってくるあいだに1枚ずつ現れる
-    const s = scene(scope, desktop, { start: 'top 82%', end: 'top 30%' });
+  useSceneMotion(ref, ({ scope }) => {
+    // カードは1枚ずつ、画面へ入るあいだに現れる（スクロール同期・上へ戻せば逆再生）
     gsap.utils.toArray<HTMLElement>('.tm__card', scope).forEach((c) => {
-      s.rv(c, { start: 'top 98%', end: 'top 70%' }).fromTo(c, { opacity: 0, y: 36, scale: 0.97 }, { opacity: 1, y: 0, scale: 1 }, 0);
+      scrubTl(c, { start: 'top 98%', end: 'top 70%' }).fromTo(c, { opacity: 0, y: 36, scale: 0.97 }, { opacity: 1, y: 0, scale: 1 }, 0);
     });
-    s.rv('.tm__contact', { start: 'top 100%', end: 'top 72%' }).fromTo('.tm__contact', { opacity: 0, y: 34 }, { opacity: 1, y: 0 }, 0);
-    s.finish();
+    scrubTl('.tm__contact', { start: 'top 100%', end: 'top 72%' }).fromTo('.tm__contact', { opacity: 0, y: 34 }, { opacity: 1, y: 0 }, 0);
   });
 
   const grouped = TEAM_MEMBERS.some((m) => m.team && TEAM_GROUPS.some((g) => g.key === m.team));

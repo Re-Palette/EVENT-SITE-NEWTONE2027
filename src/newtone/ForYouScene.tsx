@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Phrases } from './parts';
-import { eachFromTo, gsap, SCRUB, scene, useSceneMotion } from './motion';
+import { eachFromTo, gsap, scrubTl, useSceneMotion } from './motion';
 
 const REASONS = [
   '新しいコスメや|スキンケアに、|誰よりも早く|出会いたい。',
@@ -18,44 +18,28 @@ export const ForYouScene: React.FC = () => {
   const ref = useRef<HTMLElement>(null);
 
   useSceneMotion(ref, ({ desktop, scope }) => {
-    // 1画面に収まれば上端ピンの中で登場 → 静止。収まらなければ入ってくるあいだに完成させて下端でピン
-    // （PC の見出しは CSS の sticky で左に留まる）
-    const s = scene(scope, desktop, { start: 'top 70%', end: 'top 20%' });
     if (!desktop) {
-      eachFromTo(s.rv('.fy__head', { end: 'top 55%' }), '.fy__head > *', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 }, 0, 0.25);
+      eachFromTo(scrubTl('.fy__head', { end: 'top 50%' }), '.fy__head > *', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 }, 0, 0.25);
       // 各行：罫線が左から伸び、番号と文が順に立ち上がる（PC と同じ組み立て。スクロール同期）
       gsap.utils.toArray<HTMLElement>('.fy__item', scope).forEach((item) => {
-        s.rv(item, { start: 'top 98%', end: 'top 72%' })
+        scrubTl(item, { start: 'top 92%', end: 'top 58%' })
           .fromTo(item.querySelector('.fy__rule'), { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: 'power2.inOut' }, 0)
           .fromTo(item.querySelector('.fy__no'), { opacity: 0, x: -18 }, { opacity: 1, x: 0, duration: 0.5 }, 0.1)
           .fromTo(item.querySelector('.fy__reason'), { opacity: 0.1, y: 24 }, { opacity: 1, y: 0, duration: 0.6 }, 0.2);
       });
-      s.rv('.fy__note', { start: 'top 100%', end: 'bottom 100%' }).fromTo('.fy__note', { opacity: 0, y: 24 }, { opacity: 1, y: 0 }, 0);
-      s.finish();
-      return;
-    }
-    if (s.fit) {
-      s.tl
-        .fromTo('.fy__head > *', { opacity: 0, y: 44 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.14 }, 0)
-        .fromTo('.fy__rule', { scaleX: 0 }, { scaleX: 1, duration: 0.3, stagger: 0.2 }, 0.2)
-        .fromTo('.fy__no', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.2, stagger: 0.2 }, 0.24)
-        .fromTo('.fy__reason', { opacity: 0.1, y: 22 }, { opacity: 1, y: 0, duration: 0.26, stagger: 0.2 }, 0.24)
-        .fromTo('.fy__note', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.2 }, '>-0.05');
-      s.finish();
+      scrubTl('.fy__note', { start: 'top 95%', end: 'top 65%' }).fromTo('.fy__note', { opacity: 0, y: 24 }, { opacity: 1, y: 0 }, 0);
       return;
     }
     gsap
-      .timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: '.fy__sheet', start: 'top 80%', end: 'top 25%', scrub: SCRUB, invalidateOnRefresh: true } })
+      .timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: '.fy__sheet', start: 'top 80%', end: 'top 25%', scrub: true } })
       .fromTo('.fy__head > *', { opacity: 0, y: 44 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.14 }, 0);
 
-    // 一覧：下端が画面の下に着くまでに完成する（ピンで止まるときには全部見えている）
     gsap
-      .timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: '.fy__main', start: 'top 85%', end: 'bottom 100%', scrub: SCRUB, invalidateOnRefresh: true } })
+      .timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: '.fy__list', start: 'top 82%', end: 'bottom 62%', scrub: true } })
       .fromTo('.fy__rule', { scaleX: 0 }, { scaleX: 1, duration: 0.3, stagger: 0.2 }, 0)
       .fromTo('.fy__no', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.2, stagger: 0.2 }, 0.04)
       .fromTo('.fy__reason', { opacity: 0.1, y: 22 }, { opacity: 1, y: 0, duration: 0.26, stagger: 0.2 }, 0.04)
       .fromTo('.fy__note', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.2 }, '>-0.05');
-    s.finish();
   });
 
   return (

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { SplitChars } from './parts';
-import { eachFromTo, gsap, isLite, scene, scrollToEl, useSceneMotion } from './motion';
+import { eachFromTo, gsap, isLite, scrollToEl, scrubTl, useSceneMotion } from './motion';
 
 /** キービジュアル（文字なし）。PC は横長、スマホ・縦長は製品まわりを切り出した版 */
 const bgPc = '/newtone/concept-bg.webp';
@@ -15,10 +15,7 @@ export const ManifestoScene: React.FC = () => {
   const ref = useRef<HTMLElement>(null);
 
   useSceneMotion(ref, ({ desktop, scope }) => {
-    // 1画面に収まれば上端でピン（登場 → 静止）。収まらなければ、要素が入るあいだに完成させて下端でピン
-    const s = scene(scope, desktop, { start: 'top 72%', end: 'top 8%' });
-
-    // 背景：ゆっくり寄りから引いていく（軽量端末では動かさない）。ピンで止まる前に終える
+    // 背景：ゆっくり寄りから引いていく（軽量端末では動かさない）
     if (!isLite()) {
       gsap.fromTo(
         '.mf__img',
@@ -27,35 +24,38 @@ export const ManifestoScene: React.FC = () => {
           scale: 1,
           yPercent: 0,
           ease: 'none',
-          scrollTrigger: { trigger: scope, start: 'top bottom', end: desktop || s.fit ? 'top top' : 'bottom bottom', scrub: true },
+          scrollTrigger: { trigger: scope, start: 'top bottom', end: desktop ? 'top top' : 'bottom 60%', scrub: true },
         },
       );
     }
 
     if (!desktop) {
-      // スマホ：要素ごとに、画面へ入るあいだで完成する（ピンする場面ではその中に順に並ぶ）。上へ戻せば逆再生
-      const tag = s.rv('.mf__bg', { start: 'top 60%', end: 'bottom 75%' });
+      // スマホ：要素ごとに、画面へ入るあいだで完成する。上へ戻せば逆再生
+      const tag = scrubTl('.mf__bg', { start: 'top 60%', end: 'bottom 70%' });
       tag.fromTo('.mf__tag', { opacity: 0, xPercent: -8 }, { opacity: 1, xPercent: 0, duration: 0.5 }, 0);
       tag.fromTo('.mf__tag-line', { scaleX: 0 }, { scaleX: 1, duration: 0.5 }, 0.2);
 
-      const eb = s.rv('.mf__eyebrow', { start: 'top 94%', end: 'top 74%' });
+      const eb = scrubTl('.mf__eyebrow', { start: 'top 94%', end: 'top 70%' });
       eb.fromTo('.mf__rule--l, .mf__rule--r', { scaleX: 0 }, { scaleX: 1, duration: 0.7 }, 0);
       eb.fromTo('.mf__eyebrow-text', { opacity: 0 }, { opacity: 1, duration: 0.5 }, 0);
 
-      const title = s.rv('.mf__title', { start: 'top 92%', end: 'top 60%' });
+      const title = scrubTl('.mf__title', { start: 'top 90%', end: 'top 45%' });
       eachFromTo(title, '.mf__title .char', { opacity: 0.12, yPercent: 60 }, { opacity: 1, yPercent: 0, duration: 0.2, ease: 'power2.out' }, 0.05, 0.04);
       title.fromTo('.mf__glow', { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.3 }, 0.6);
 
       gsap.utils.toArray<HTMLElement>('.mf__body p', scope).forEach((p) => {
-        s.rv(p, { end: 'top 72%' }).fromTo(p, { opacity: 0.14, y: 18 }, { opacity: 1, y: 0 }, 0);
+        scrubTl(p, { end: 'top 68%' }).fromTo(p, { opacity: 0.14, y: 18 }, { opacity: 1, y: 0 }, 0);
       });
-      s.rv('.mf__cue', { start: 'top 100%', end: 'bottom 100%' }).fromTo('.mf__cue', { opacity: 0 }, { opacity: 1 }, 0);
-      s.finish();
+      scrubTl('.mf__cue', { start: 'top 100%', end: 'top 92%' }).fromTo('.mf__cue', { opacity: 0 }, { opacity: 1 }, 0);
       return;
     }
 
     // PC：読む速さで要素が順に灯っていく
-    s.tl
+    gsap
+      .timeline({
+        defaults: { ease: 'none' },
+        scrollTrigger: { trigger: scope, start: 'top 72%', end: 'top 8%', scrub: true },
+      })
       .fromTo('.mf__rule--l, .mf__rule--r', { scaleX: 0 }, { scaleX: 1, duration: 0.14 }, 0)
       .fromTo('.mf__eyebrow-text', { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0.03)
       .fromTo('.mf__tag', { opacity: 0, xPercent: -10 }, { opacity: 1, xPercent: 0, duration: 0.16, ease: 'power2.out' }, 0.1)
@@ -64,13 +64,10 @@ export const ManifestoScene: React.FC = () => {
       .fromTo('.mf__glow', { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.14 }, '>-0.04')
       .fromTo('.mf__body p', { opacity: 0.14, y: 14 }, { opacity: 1, y: 0, duration: 0.16, stagger: 0.09 }, '>-0.08')
       .fromTo('.mf__cue', { opacity: 0 }, { opacity: 1, duration: 0.12 }, '>-0.06');
-    s.finish();
   });
 
   const goNext = () => {
-    // ピン留め中は section が pin-spacer に包まれているので、その外側の兄弟が「次」
-    const cur = ref.current;
-    const next = (cur?.parentElement?.classList.contains('pin-spacer') ? cur.parentElement : cur)?.nextElementSibling;
+    const next = ref.current?.nextElementSibling;
     if (next instanceof HTMLElement) scrollToEl(next);
   };
 
