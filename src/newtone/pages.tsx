@@ -6,6 +6,7 @@ import { ExperienceScene } from './ExperienceScene';
 import { CategoriesScene } from './CategoriesScene';
 import { BrandsScene } from './BrandsScene';
 import { PartnersScene } from './PartnersScene';
+import { TeamScene } from './TeamScene';
 import { ForYouScene } from './ForYouScene';
 import { InfoScene } from './InfoScene';
 import { SnsScene } from './SnsScene';
@@ -92,6 +93,18 @@ export const ProgramPage: React.FC = () => (
 export const BrandsPage: React.FC = () => (
   <SubPage href="/brands" lead="学生起業家や若いクリエイターが生み出す、次世代の美容ブランドが集まります。">
     <BrandsScene />
+  </SubPage>
+);
+
+export const PartnersPage: React.FC = () => (
+  <SubPage href="/partners" lead="NEWTONE 2027 を一緒につくる協賛企業・団体の皆さまをご紹介します。決定次第、順次掲載します。">
+    <PartnersScene variant="full" />
+  </SubPage>
+);
+
+export const TeamPage: React.FC = () => (
+  <SubPage href="/team" lead="NEWTONE 2027 をつくる運営メンバーをご紹介します。">
+    <TeamScene />
   </SubPage>
 );
 

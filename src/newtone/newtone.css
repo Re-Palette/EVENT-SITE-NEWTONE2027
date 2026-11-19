@@ -232,26 +232,39 @@
   font-feature-settings: 'lnum' 1;
 }
 
+/* ロゴとENTRYボタンのあいだに、8項目を等間隔で配る（項目数が変わっても崩れない） */
 .nt .site-nav {
   position: absolute;
-  inset: 0;
+  top: calc(46 * var(--u));
+  left: calc(var(--stage-x) + max(16px, calc(60 * var(--u))) + max(104px, calc(150 * var(--u))) + 12px);
+  right: calc(var(--stage-x) + max(16px, calc(57 * var(--u))) + calc(238 * var(--u)) + 12px);
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 4px;
   pointer-events: none;
 }
 
-/* 各項目の中心を参考画像のx座標(--x)に合わせる */
 .nt .site-nav a {
-  position: absolute;
-  left: calc(var(--stage-x) + var(--x) * var(--u));
-  top: calc(46 * var(--u));
-  transform: translate(-50%, -50%);
+  position: relative;
+  flex: none;
   pointer-events: auto;
   font-family: var(--f-sans-en);
   font-weight: 500;
   font-size: max(10.5px, calc(13.6 * var(--u)));
   letter-spacing: 0.18em;
+  white-space: nowrap;
   color: #fff;
   text-decoration: none;
   padding: 0.4em 0 0.4em 0.18em;
+}
+
+/* 狭いデスクトップでは字間を少し詰める（ハンバーガーに切り替わる 1023px 以下の手前） */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .nt .site-nav a {
+    letter-spacing: 0.1em;
+  }
 }
 
 .nt .site-nav a::after {

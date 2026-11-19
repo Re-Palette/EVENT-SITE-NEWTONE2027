@@ -52,7 +52,7 @@ export const SiteHeader: React.FC = () => {
         </Link>
         <nav className="site-nav" aria-label="メインナビゲーション">
           {NAV_LINKS.map((l) => (
-            <NavLink key={l.label} to={l.href} style={{ ['--x' as string]: l.x }} onClick={onNav(l.href)}>
+            <NavLink key={l.label} to={l.href} onClick={onNav(l.href)}>
               {l.label}
             </NavLink>
           ))}

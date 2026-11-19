@@ -71,16 +71,19 @@ export const CONTACT_HREF = SITE.contact.entryUrl ?? '/contact#contact-form';
 export const CONTACT_EXTERNAL = SITE.contact.entryUrl !== null;
 
 /**
- * 上部ナビ＝各ページ。x: 参考ビジュアル(1672px幅)上での各項目の中心座標。
- * ja / lead は各ページの見出しで使う（確定している内容だけを書くこと）。
+ * 上部ナビ＝各ページ（並び順がそのまま上部ナビ・モバイルメニュー・各ページ末尾の「NEXT」の順）。
+ * ja は各ページの見出し・ページタイトルで使う（確定している内容だけを書くこと）。
+ * 上部ナビの横位置は CSS（newtone.css の .site-nav）が等間隔に配るので、項目を足すだけでよい。
  */
 export const NAV_LINKS = [
-  { label: 'ABOUT', x: 456, href: '/about', ja: 'NEWTONEについて' },
-  { label: 'PROGRAM', x: 607, href: '/program', ja: 'プログラム' },
-  { label: 'BRANDS', x: 766, href: '/brands', ja: '参加ブランド' },
-  { label: 'ACCESS', x: 946, href: '/access', ja: '開催概要・アクセス' },
-  { label: 'NEWS', x: 1088, href: '/news', ja: 'お知らせ' },
-  { label: 'CONTACT', x: 1235, href: '/contact', ja: '参加・お問い合わせ' },
+  { label: 'ABOUT', href: '/about', ja: 'NEWTONEについて' },
+  { label: 'PROGRAM', href: '/program', ja: 'プログラム' },
+  { label: 'BRANDS', href: '/brands', ja: '参加ブランド' },
+  { label: 'PARTNERS', href: '/partners', ja: '協賛・パートナー' },
+  { label: 'TEAM', href: '/team', ja: '運営メンバー' },
+  { label: 'ACCESS', href: '/access', ja: '開催概要・アクセス' },
+  { label: 'NEWS', href: '/news', ja: 'お知らせ' },
+  { label: 'CONTACT', href: '/contact', ja: '参加・お問い合わせ' },
 ] as const;
 
 /** 参考ビジュアル右側のカテゴリー表記と同一の並び */

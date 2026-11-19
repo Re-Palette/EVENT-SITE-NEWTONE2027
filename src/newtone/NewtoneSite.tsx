@@ -3,7 +3,7 @@ import { Route, Routes, useLocation, useNavigationType } from 'react-router-dom'
 import { SiteHeader } from './SiteHeader';
 import { ScrollTrigger, anchorY, scrollToTop, useScrollSync } from './motion';
 import { NAV_LINKS } from './site';
-import { AboutPage, AccessPage, BrandsPage, ContactPage, HomePage, NewsPage, NotFoundPage, ProgramPage } from './pages';
+import { AboutPage, AccessPage, BrandsPage, ContactPage, HomePage, NewsPage, NotFoundPage, PartnersPage, ProgramPage, TeamPage } from './pages';
 import './newtone.css';
 import './scenes.css';
 import './pages.css';
@@ -74,6 +74,8 @@ export function NewtoneSite() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/program" element={<ProgramPage />} />
           <Route path="/brands" element={<BrandsPage />} />
+          <Route path="/partners" element={<PartnersPage />} />
+          <Route path="/team" element={<TeamPage />} />
           <Route path="/access" element={<AccessPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/contact" element={<ContactPage />} />

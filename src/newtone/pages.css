@@ -418,7 +418,17 @@
 }
 
 .nt .pt__cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px clamp(28px, 4vw, 56px);
   margin: clamp(36px, 6vh, 64px) 0 0;
+}
+
+.nt .pt__cta-link--sub {
+  border-image: none;
+  border-bottom-color: rgba(255, 255, 255, 0.32);
+  color: rgba(247, 244, 255, 0.82);
 }
 
 .nt .pt__cta-link {
@@ -462,6 +472,317 @@
   .nt .pg-next__arrow {
     margin-top: 18px;
     width: 52px;
+  }
+}
+
+/* ---- /partners（variant full）：見出しは PageHero。一覧 + 募集ブロック ---- */
+.nt .pt--full {
+  padding-top: clamp(56px, 9vh, 110px);
+}
+
+.nt .pt--full .pt__groups {
+  margin-top: 0;
+}
+
+.nt .pt--full .pt__group-en {
+  font-size: clamp(24px, 2.3vw, 38px);
+}
+
+.nt .pt--full .pt__tile {
+  min-height: 132px;
+}
+
+.nt .pt--full .pt__logo {
+  max-height: 64px;
+}
+
+/* 一覧ページの未掲載枠：Coming soon の枠 + 空の枠 */
+.nt .pt__tile--ph {
+  gap: 6px;
+  align-content: center;
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.24);
+  background: linear-gradient(160deg, rgba(189, 184, 246, 0.08), rgba(255, 255, 255, 0.01));
+}
+
+.nt .pt__tile--ghost {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.035), transparent);
+}
+
+.nt .pt__tile--ph .pt__tba-ja {
+  display: block;
+}
+
+.nt .pt__recruit {
+  position: relative;
+  margin-top: clamp(56px, 9vh, 104px);
+  padding: clamp(32px, 5vw, 64px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 28px;
+  background:
+    radial-gradient(60% 90% at 100% 0%, rgba(255, 79, 163, 0.2), transparent 70%),
+    radial-gradient(60% 90% at 0% 100%, rgba(79, 109, 255, 0.2), transparent 70%),
+    rgba(255, 255, 255, 0.03);
+}
+
+.nt .pt__recruit-title {
+  margin: clamp(14px, 2vh, 22px) 0 0;
+  font-family: var(--f-mincho);
+  font-weight: 600;
+  font-size: clamp(22px, 2.6vw, 40px);
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+}
+
+.nt .pt__recruit-text {
+  max-width: 38em;
+  margin: clamp(16px, 2.4vh, 26px) 0 0;
+  font-size: clamp(14px, 1.05vw, 16px);
+  line-height: 2.1;
+  letter-spacing: 0.08em;
+  color: rgba(247, 244, 255, 0.85);
+}
+
+.nt .pt__recruit-cta,
+.nt .tm__contact-cta {
+  height: clamp(54px, 4.2vw, 70px);
+  margin-top: clamp(24px, 4vh, 40px);
+  max-width: 100%;
+  font-family: var(--f-ja);
+  font-size: clamp(13px, 1vw, 16px);
+  letter-spacing: 0.16em;
+}
+
+/* =========================================================
+   TEAM — 運営メンバー
+   ========================================================= */
+.nt .tm {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding: clamp(56px, 9vh, 110px) max(24px, 6vw) clamp(80px, 12vh, 140px);
+  background:
+    radial-gradient(46% 40% at 100% 0%, rgba(163, 92, 240, 0.16), transparent 70%),
+    radial-gradient(40% 40% at 0% 70%, rgba(79, 109, 255, 0.14), transparent 70%),
+    linear-gradient(180deg, var(--c-deep) 0%, #0b1146 100%);
+}
+
+.nt .tm__group + .tm__group {
+  margin-top: clamp(48px, 8vh, 88px);
+}
+
+.nt .tm__group-title {
+  display: flex;
+  align-items: baseline;
+  gap: 1.2em;
+  margin: 0 0 clamp(20px, 3vh, 32px);
+  padding-top: clamp(20px, 3vh, 30px);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  font-weight: 400;
+}
+
+.nt .tm__group-en {
+  font-family: var(--f-display);
+  font-size: clamp(24px, 2.3vw, 38px);
+  letter-spacing: 0.03em;
+}
+
+.nt .tm__group-ja {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: rgba(247, 244, 255, 0.66);
+}
+
+.nt .tm__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+  gap: clamp(22px, 2.4vw, 36px) clamp(16px, 1.8vw, 28px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nt .tm__card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* 4:5 のポートレート枠。グラデーションの縁取り */
+.nt .tm__frame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(160deg, #1b2270, #0d1452 60%, #2a1a6e) padding-box,
+    linear-gradient(150deg, rgba(255, 255, 255, 0.75), rgba(163, 92, 240, 0.55) 45%, rgba(255, 79, 163, 0.7)) border-box;
+}
+
+.nt .tm__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nt .tm__mono {
+  font-family: var(--f-serif-en);
+  font-size: clamp(52px, 6vw, 84px);
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, #fff, #dcbcfb 55%, #ff8ccd);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.nt .tm__role {
+  margin: 16px 0 0;
+  font-family: var(--f-sans-en);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--c-pink);
+}
+
+.nt .tm__name {
+  margin: 6px 0 0;
+  font-family: var(--f-mincho);
+  font-weight: 600;
+  font-size: clamp(18px, 1.4vw, 22px);
+  letter-spacing: 0.1em;
+}
+
+.nt .tm__name-en {
+  margin: 4px 0 0;
+  font-family: var(--f-sans-en);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: rgba(247, 244, 255, 0.66);
+}
+
+.nt .tm__aff {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  color: rgba(247, 244, 255, 0.78);
+}
+
+.nt .tm__bio {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.9;
+  letter-spacing: 0.05em;
+  color: rgba(247, 244, 255, 0.8);
+}
+
+.nt .tm__sns {
+  display: flex;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nt .tm__sns a {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  color: #fff;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.nt .tm__sns a:hover {
+  border-color: var(--c-pink);
+  background-color: rgba(255, 79, 163, 0.12);
+}
+
+.nt .tm__sns svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* 未掲載の枠 */
+.nt .tm__card--ph .tm__frame {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.24);
+  background: linear-gradient(160deg, rgba(189, 184, 246, 0.09), rgba(255, 255, 255, 0.01));
+}
+
+.nt .tm__card--ph:not(:first-child) .tm__frame {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.035), transparent);
+}
+
+.nt .tm__sil {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: rgba(189, 184, 246, 0.1);
+}
+
+.nt .tm__soon {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  padding: 0 14px;
+  text-align: center;
+}
+
+.nt .tm__soon-en {
+  font-family: var(--f-script);
+  font-size: clamp(22px, 2vw, 28px);
+  color: var(--c-lavender);
+}
+
+.nt .tm__soon-ja {
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: rgba(247, 244, 255, 0.78);
+}
+
+.nt .tm__contact {
+  margin-top: clamp(56px, 9vh, 104px);
+  padding-top: clamp(32px, 5vh, 56px);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.nt .tm__contact-title {
+  margin: clamp(14px, 2vh, 22px) 0 0;
+  font-family: var(--f-mincho);
+  font-weight: 600;
+  font-size: clamp(22px, 2.6vw, 38px);
+  letter-spacing: 0.08em;
+}
+
+.nt .tm__contact-text {
+  max-width: 38em;
+  margin: clamp(14px, 2vh, 22px) 0 0;
+  font-size: clamp(14px, 1.05vw, 16px);
+  line-height: 2.1;
+  letter-spacing: 0.08em;
+  color: rgba(247, 244, 255, 0.85);
+}
+
+.nt .tm__org {
+  margin: clamp(24px, 4vh, 36px) 0 0;
+  font-family: var(--f-sans-en);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  color: rgba(247, 244, 255, 0.55);
+}
+
+@media (max-width: 767px) {
+  .nt .tm__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

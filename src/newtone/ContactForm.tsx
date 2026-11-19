@@ -1,10 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { SNS } from './site';
 import { ScrollTrigger, scrollToEl } from './motion';
 import { ArrowRight } from './parts';
 
 /** お問い合わせ種別（api/contact.ts の TYPES と同じ並び・同じ文言にすること） */
 export const CONTACT_TYPES = ['出店希望', '協賛・パートナー', '来場について', '取材・メディア', 'その他'] as const;
+
+/**
+ * URL の ?type= で種別を事前選択するための対応表（例: /contact?type=sponsor#contact-form）。
+ * 知らない値は無視する（未選択のまま）。
+ */
+export const CONTACT_TYPE_PARAMS: Record<string, (typeof CONTACT_TYPES)[number]> = {
+  exhibit: '出店希望',
+  sponsor: '協賛・パートナー',
+  visit: '来場について',
+  press: '取材・メディア',
+  other: 'その他',
+};
 
 const MAX = { name: 100, organization: 100, email: 254, phone: 30, message: 2000 } as const;
 const EMAIL_RE = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
@@ -77,10 +90,17 @@ export const ContactForm: React.FC = () => {
   const doneRef = useRef<HTMLDivElement>(null);
   const renderedAt = useRef(Date.now());
   const sending = useRef(false);
-  const [v, setV] = useState<Values>(EMPTY);
+  const { search } = useLocation();
+  const [v, setV] = useState<Values>(() => ({ ...EMPTY, type: CONTACT_TYPE_PARAMS[new URLSearchParams(search).get('type') ?? ''] ?? '' }));
   const [honeypot, setHoneypot] = useState('');
   const [errors, setErrors] = useState<Errors>({});
   const [status, setStatus] = useState<Status>('idle');
+
+  // 同じ /contact のまま ?type= だけが変わったとき（例: 別の導線から）も種別を反映する
+  const typeParam = CONTACT_TYPE_PARAMS[new URLSearchParams(search).get('type') ?? ''];
+  useEffect(() => {
+    if (typeParam) setV((cur) => (cur.type === typeParam ? cur : { ...cur, type: typeParam }));
+  }, [typeParam]);
 
   // フォームは入力の邪魔をしないよう、出現アニメーションを付けない（常に完成形で表示）
 
