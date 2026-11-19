@@ -39,4 +39,7 @@ export const TEAM_GROUPS: { key: TeamKey; en: string; ja: string }[] = [
   { key: 'design', en: 'DESIGN', ja: 'デザイン' },
 ];
 
-export const TEAM_MEMBERS: TeamMember[] = [];
+export const TEAM_MEMBERS: TeamMember[] = [
+  { id: 'hoshi-haruto', name: '星 晴登', nameEn: 'Hoshi Haruto', role: '共同代表' },
+  { id: 'suzuki-haruto', name: '鈴木 陽大', nameEn: 'Suzuki Haruto', role: '共同代表' },
+];
