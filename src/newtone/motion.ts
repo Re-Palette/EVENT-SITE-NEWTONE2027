@@ -196,6 +196,14 @@ export function scrubTl(trigger: gsap.DOMTarget, st: Omit<ScrollTrigger.Vars, 't
 export const PIN_ANIM = 0.6;
 /** 上端ピンの長さ（画面の高さに対する倍率） */
 const pinDist = (desktop: boolean) => (desktop ? 1.4 : 1.0);
+/**
+ * 場面（scene()）の上端ピンの長さ。登場の大半はピンの前（'top 85%' → 'top top'）で進み、ピンでは最後の仕上げ（約12%）と静止だけを行うので短くてよい。
+ */
+const scenePinDist = (desktop: boolean) => (desktop ? 1.0 : 0.7);
+/** ピンの前に登場を始める位置（場面の上端がこの高さに来たとき） */
+const PRE_START = 0.85;
+/** ピンの最初の何割までに登場を終えるか */
+const PIN_ENTRANCE = 0.12;
 /** 下端ピン（HOLD のみ）の長さ */
 const holdDist = (desktop: boolean) => (desktop ? 0.5 : 0.45);
 
@@ -240,6 +248,33 @@ export function pinBottom(trigger: HTMLElement, desktop: boolean) {
   });
 }
 
+/** 登場が全体（ピン前の助走 + ピン）に占める割合。ピンの前に始まるので、ピンに入った時点でおよそ80%は進んでいる */
+function entranceShare(desktop: boolean) {
+  const vh = window.innerHeight;
+  const dist = vh * scenePinDist(desktop);
+  return (vh * PRE_START + dist * PIN_ENTRANCE) / (vh * PRE_START + dist);
+}
+
+/**
+ * 上端ピンの場面用：ピンそのものと、登場アニメを動かすタイムラインを別々のトリガーで作る。
+ * タイムラインは 'top 85%'（場面が画面下から上がってくる途中）から始まり、ピンの終わりまで一続きで scrub される。
+ * ＝ピンに入る前から中身が埋まりはじめ、ピンの間は最後の仕上げ + 静止。
+ */
+function preAndPinTl(scope: HTMLElement, desktop: boolean) {
+  const dist = () => Math.round(window.innerHeight * scenePinDist(desktop));
+  ScrollTrigger.create({ trigger: scope, start: 'top top', end: () => `+=${dist()}`, ...pinBase });
+  return gsap.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: {
+      trigger: scope,
+      start: `top ${PRE_START * 100}%`,
+      end: () => `top+=${dist()} top`,
+      scrub: SCRUB,
+      invalidateOnRefresh: true,
+    },
+  });
+}
+
 /**
  * 場面の登場アニメの入れ物。
  * - 1画面に収まる（fit）→ 上端ピンのタイムライン。tl に登場を組み、finish() で後半に静止区間を足す。
@@ -263,7 +298,7 @@ export function scene(scope: HTMLElement, desktop: boolean, reveal: Omit<ScrollT
     fit,
     get tl() {
       return (main ??= fit
-        ? pinTl(scope, desktop)
+        ? preAndPinTl(scope, desktop)
         : gsap.timeline({
             defaults: { ease: 'none' },
             scrollTrigger: { trigger: scope, start: 'top 80%', end: 'top 25%', scrub: SCRUB, invalidateOnRefresh: true, ...reveal },
@@ -277,7 +312,7 @@ export function scene(scope: HTMLElement, desktop: boolean, reveal: Omit<ScrollT
       return t;
     },
     finish() {
-      if (fit) holdEnd(api.tl);
+      if (fit) holdEnd(api.tl, entranceShare(desktop));
       else pinBottom(scope, desktop);
     },
   };
