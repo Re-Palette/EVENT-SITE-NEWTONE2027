@@ -40,6 +40,18 @@ export const TEAM_GROUPS: { key: TeamKey; en: string; ja: string }[] = [
 ];
 
 export const TEAM_MEMBERS: TeamMember[] = [
-  { id: 'hoshi-haruto', name: '星 晴登', nameEn: 'Hoshi Haruto', role: '共同代表' },
-  { id: 'suzuki-haruto', name: '鈴木 陽大', nameEn: 'Suzuki Haruto', role: '共同代表' },
+  {
+    id: 'hoshi-haruto',
+    name: '星 晴登',
+    nameEn: 'Hoshi Haruto',
+    role: '共同代表',
+    affiliation: '慶應義塾大学 SFC ／ 株式会社Moosei',
+  },
+  {
+    id: 'suzuki-haruto',
+    name: '鈴木 陽大',
+    nameEn: 'Suzuki Haruto',
+    role: '共同代表',
+    affiliation: '武蔵野大学 EMC ／ 美容福祉団体 Re-Palette 代表',
+  },
 ];
